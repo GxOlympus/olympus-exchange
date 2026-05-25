@@ -1,0 +1,10 @@
+{
+  "name": "olympus-exchange",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "check": "node --check server.js && node -e \"const fs=require('fs');const html=fs.readFileSync('index.html','utf8');const scripts=[...html.matchAll(/<script(?:[^>]*)>([\\s\\S]*?)<\\/script>/g)].map(m=>m[1]);scripts.forEach(s=>new Function(s));console.log('ok')\""
+  }
+}

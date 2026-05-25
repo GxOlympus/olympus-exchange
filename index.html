@@ -1,0 +1,4043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Olympus Exchange</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0c0900; }
+
+    #game-container {
+      width: 100%; height: 100%;
+      max-width: 480px; margin: 0 auto;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      background: #0c0900;
+      font-family: 'IM Fell English', serif;
+    }
+
+    /* ═══════════════ SPLASH ═══════════════ */
+    #splash {
+      position: absolute; inset: 0; z-index: 300;
+      background:
+        linear-gradient(180deg, rgba(7,5,13,0.18), rgba(7,5,13,0.26) 52%, rgba(7,5,13,0.72)),
+        url("banner.png") center center / cover no-repeat #0c0900;
+      overflow: hidden;
+    }
+    #splash-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      display: none;
+      transition: opacity 0.35s ease;
+    }
+    #splash.video-ready #splash-video {
+      opacity: 0.92;
+    }
+    #splash .sp-title-frame,
+    #splash .sp-loader-frame {
+      opacity: 1;
+      transition: opacity 0.35s ease;
+    }
+    #splash.video-ready .sp-title-frame,
+    #splash.video-ready .sp-loader-frame {
+      opacity: 1;
+    }
+    .sp-logo {
+      position: absolute;
+      top: 40%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .sp-logo-title {
+      font-family: 'Cinzel', serif; font-size: 46.8px; font-weight: 700;
+      letter-spacing: 4px; line-height: 1;
+      background: linear-gradient(90deg,
+        #c9a227 0%, #f0d060 18%, #ffffff 30%, #c9a227 44%,
+        #a07010 58%, #d4aa30 72%, #ffffff 84%, #c9a227 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: title-shimmer 3.4s linear infinite;
+    }
+    @keyframes title-shimmer {
+      0%   { background-position: 0% center; }
+      100% { background-position: 250% center; }
+    }
+    .sp-exchange {
+      font-family: 'IM Fell English', serif; font-size: 13px; font-weight: 400;
+      color: #ffffff; letter-spacing: 10px; text-transform: uppercase;
+      margin-top: 8px; opacity: 1;
+    }
+    .sp-chain {
+      font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
+      color: #b7a7ff; letter-spacing: 5px; text-transform: none;
+      margin-top: 7px;
+      text-shadow: 0 0 16px rgba(131,110,249,0.8), 0 0 34px rgba(255,122,182,0.35);
+    }
+    .sp-ambassadors {
+      display: flex; gap: 12px; justify-content: center;
+      margin-top: 20px;
+    }
+    .sp-ambassador {
+      width: 140px; height: 140px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(201,162,39,0.45);
+      background: linear-gradient(160deg, rgba(50,35,5,0.7) 0%, rgba(30,20,2,0.85) 100%);
+      box-shadow:
+        0 0 12px rgba(212,170,40,0.55),
+        0 0 28px rgba(185,145,28,0.3),
+        0 0 56px rgba(160,120,15,0.15),
+        inset 0 1px 0 rgba(230,190,60,0.12),
+        inset 0 0 20px rgba(165,125,18,0.08);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .sp-ambassador::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 16px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(220,180,50,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    /* splash title frame */
+    .sp-title-frame {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -95%);
+      text-align: center;
+      padding: 26px 29.03px 22px;
+      border: 1px solid rgba(201,162,39,0.52);
+      border-radius: 16px;
+      background: linear-gradient(160deg, #1e1404 0%, #120d02 100%);
+      box-shadow:
+        0 0 0 5px rgba(201,162,39,0.07),
+        0 0 28px rgba(201,162,39,0.32),
+        0 0 70px rgba(160,120,15,0.18),
+        inset 0 0 40px rgba(140,100,8,0.07);
+      white-space: nowrap;
+    }
+    /* corner ornaments */
+    .sp-title-frame::before, .sp-title-frame::after {
+      content: '✦';
+      position: absolute;
+      font-size: 10px;
+      color: rgba(201,162,39,0.6);
+      line-height: 1;
+    }
+    .sp-title-frame::before { top: 7px; left: 10px; }
+    .sp-title-frame::after  { bottom: 7px; right: 10px; }
+
+    /* splash loader frame */
+    .sp-loader-frame {
+      position: absolute;
+      bottom: clamp(46px, 8vh, 88px); left: 50%; transform: translateX(-50%);
+      text-align: center;
+      padding: 13px 22px;
+      border: 1px solid rgba(183,167,255,0.44);
+      border-radius: 12px;
+      background: rgba(7,5,16,0.56);
+      box-shadow:
+        0 0 0 4px rgba(131,110,249,0.08),
+        0 0 22px rgba(131,110,249,0.38),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      white-space: nowrap;
+      width: min(440px, 62vw);
+      min-width: 230px;
+    }
+    .sp-bar-bg {
+      width: 100%; height: 5px;
+      background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden;
+    }
+    .sp-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff7ab6, #836ef9, #3db8ff); border-radius: 2px; box-shadow: 0 0 12px rgba(131,110,249,0.85); transition: width 0.05s linear; }
+    .sp-pct {
+      display: none;
+      margin-top: 8px;
+      font-size: 10px; letter-spacing: 4px; color: #ffffff;
+      font-family: 'Cinzel', serif; text-align: center;
+    }
+
+    /* ═══════════════ TOP BAR ═══════════════ */
+    #top-panel {
+      flex-shrink: 0;
+      background: transparent;
+      padding: 6.25vh 8px 0;
+    }
+    #top-bar {
+      height: 60px;
+      background: linear-gradient(170deg, #2a1e06 0%, #1e1504 50%, #150e02 100%);
+      border-radius: 13px 13px 18px 18px;
+      border: 1px solid rgba(201,162,39,0.28);
+      box-shadow:
+        /* внешнее синее свечение — три слоя */
+        0 0 12px rgba(201,162,39,0.45),
+        0 0 30px rgba(180,140,25,0.22),
+        0 0 60px rgba(160,120,15,0.12),
+        /* нижняя тень для объёма */
+        0 8px 24px rgba(0,0,0,0.55),
+        /* внутренние блики */
+        inset 0 1px 0 rgba(230,190,60,0.18),
+        inset 0 -1px 0 rgba(120,90,15,0.12),
+        inset 1px 0 0 rgba(201,162,39,0.07),
+        inset -1px 0 0 rgba(201,162,39,0.07);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      overflow: visible;
+    }
+    /* синяя светящаяся линия по верхнему контуру */
+    #top-bar::before {
+      content: '';
+      position: absolute; top: -1px; left: 8%; right: 8%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(201,162,39,0.5), #d4aa30, #f0d060, #d4aa30, rgba(201,162,39,0.5), transparent);
+      border-radius: 50%;
+      filter: blur(1.5px);
+      box-shadow: 0 0 10px 3px rgba(220,180,50,0.55), 0 0 28px 6px rgba(190,150,30,0.28);
+    }
+    /* блик — засветка по центру верхней части */
+    #top-bar::after {
+      content: '';
+      position: absolute; top: 0; left: 20%; right: 20%; height: 40%;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212,170,40,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .tb-title {
+      font-family: 'Cinzel', serif; font-size: 11px;
+      font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+      background: linear-gradient(180deg, #f5e6a3 0%, #d4aa30 60%, #c9a227 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: title-pulse 3.2s ease-in-out infinite;
+    }
+    .tb-chain {
+      margin-top: 3px;
+      font-family: 'Cinzel', serif; font-size: 8px; font-weight: 700;
+      letter-spacing: 3px; color: #b7a7ff; text-transform: none;
+      text-shadow: 0 0 12px rgba(131,110,249,0.8);
+    }
+    @keyframes title-pulse {
+      0%   { filter: drop-shadow(0 0 6px rgba(212,170,40,0.5))  drop-shadow(0 0 14px rgba(180,140,25,0.2)); }
+      40%  { filter: drop-shadow(0 0 14px rgba(220,180,50,0.9)) drop-shadow(0 0 32px rgba(201,162,39,0.5)) drop-shadow(0 0 54px rgba(170,130,20,0.25)); }
+      60%  { filter: drop-shadow(0 0 18px rgba(240,210,80,1))  drop-shadow(0 0 40px rgba(201,162,39,0.6)) drop-shadow(0 0 70px rgba(180,140,25,0.3)); }
+      100% { filter: drop-shadow(0 0 6px rgba(212,170,40,0.5))  drop-shadow(0 0 14px rgba(180,140,25,0.2)); }
+    }
+    .tb-left, .tb-range, .tb-right, .tb-lives, .tb-score-wrap,
+    .tb-score-lbl, .tb-score-val, .tb-heart { display: none; }
+
+    /* ═══════════════ TICKER STRIP ═══════════════ */
+    #ticker-wrap {
+      flex-shrink: 0;
+      overflow: hidden;
+      height: 28px;
+      margin: 5px 8px 0;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(201,162,39,0.15);
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(180,140,25,0.12);
+      position: relative;
+    }
+    /* fade edges */
+    #ticker-wrap::before, #ticker-wrap::after {
+      content: '';
+      position: absolute; top: 0; bottom: 0; width: 28px; z-index: 2;
+      pointer-events: none;
+    }
+    #ticker-wrap::before {
+      left: 0;
+      background: linear-gradient(90deg, rgba(7,9,15,0.95), transparent);
+    }
+    #ticker-wrap::after {
+      right: 0;
+      background: linear-gradient(270deg, rgba(7,9,15,0.95), transparent);
+    }
+    #ticker-track {
+      display: flex; align-items: center;
+      height: 100%;
+      white-space: nowrap;
+      animation: ticker-scroll 38s linear infinite;
+    }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .tick-item {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 0 18px;
+      font-family: 'Cinzel', serif; font-size: 11px;
+      border-right: 1px solid rgba(201,162,39,0.1);
+    }
+    .tick-sym {
+      font-family: 'Cinzel', serif; font-weight: 600;
+      font-size: 11px; letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.9);
+    }
+    .tick-price {
+      color: rgba(255,255,255,0.55);
+      font-size: 10.5px;
+    }
+    .tick-chg {
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.2px;
+    }
+    .tick-chg.up { color: #00e87a; }
+    .tick-chg.dn { color: #ff4444; }
+
+    /* ═══════════════ CONTENT AREA ═══════════════ */
+    /* ─── CHART COLUMN ─── */
+    #content-area {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: row;
+      padding: 4px 8px 4px;
+    }
+    #chart-col {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(201,162,39,0.18);
+      overflow: hidden;
+      box-shadow:
+        0 0 20px rgba(190,150,30,0.22),
+        0 0 50px rgba(160,120,15,0.12),
+        inset 0 1px 0 rgba(212,170,40,0.06);
+    }
+
+    #chart-wrap {
+      flex: 1; position: relative; min-height: 0;
+      background: #0c0900;
+    }
+    #chart-canvas { display: block; width: 100%; height: 100%; }
+
+    /* Percent badge */
+    #pct-badge {
+      position: absolute; right: 10px;
+      display: none; align-items: center; gap: 4px;
+      padding: 5px 12px; border-radius: 8px;
+      font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+      backdrop-filter: blur(8px); border: 1px solid;
+      letter-spacing: 1px;
+    }
+
+    /* PLACE YOUR BETS banner */
+    #bets-banner {
+      position: absolute; left: 0; bottom: 38%; width: 100%;
+      background: linear-gradient(90deg,
+        rgba(100,70,0,0.0) 0%,
+        rgba(140,100,10,0.88) 12%,
+        rgba(180,130,15,0.88) 50%,
+        rgba(140,100,10,0.88) 88%,
+        rgba(100,70,0,0.0) 100%);
+      color: #fff; font-family: 'Cinzel', serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 4px;
+      padding: 10px 40px; text-align: center;
+      display: none; white-space: nowrap;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+      border-top: 1px solid rgba(220,180,50,0.35);
+      border-bottom: 1px solid rgba(220,180,50,0.35);
+    }
+    #bets-banner.show { display: block; }
+
+    /* Mini overview chart */
+    #mini-wrap {
+      height: 48px; flex-shrink: 0;
+      background: #100c02;
+      border-top: 1px solid rgba(212,170,40,0.08);
+      position: relative;
+    }
+    #mini-canvas { display: block; width: 100%; height: 100%; }
+    #mini-label {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      font-size: 8px; letter-spacing: 3px; color: rgba(212,170,40,0.2);
+      font-family: 'IM Fell English', serif; text-transform: uppercase; pointer-events: none;
+    }
+
+
+    /* ═══════════════ BOTTOM PANEL ═══════════════ */
+    #bottom-panel {
+      flex-shrink: 0;
+      background: transparent;
+      padding: 0 8px 10px;
+    }
+    #bottom-card {
+      background: linear-gradient(170deg, #201608 0%, #170f04 40%, #110b02 100%);
+      border-radius: 18px 18px 12px 12px;
+      border: 1px solid rgba(201,162,39,0.25);
+      border-bottom: 1px solid rgba(0,0,0,0.4);
+      box-shadow:
+        /* внешнее золотое свечение */
+        0 0 14px rgba(201,162,39,0.38),
+        0 0 32px rgba(160,120,15,0.18),
+        0 0 64px rgba(150,110,12,0.1),
+        /* нижняя тень — глубина */
+        0 12px 32px rgba(0,0,0,0.65),
+        0 4px 10px rgba(0,0,0,0.5),
+        /* верхний внутренний блик */
+        inset 0 1px 0 rgba(220,180,50,0.15),
+        inset 0 2px 8px rgba(180,140,25,0.06),
+        inset 0 -1px 0 rgba(140,100,10,0.1);
+      padding: 10px 10px 10px;
+      position: relative;
+    }
+    /* тонкая светящаяся полоска по верхнему краю нижней карточки */
+    #bottom-card::before {
+      content: '';
+      position: absolute; top: -1px; left: 12%; right: 12%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(201,162,39,0.4), rgba(220,180,50,0.7), rgba(201,162,39,0.4), transparent);
+      border-radius: 50%;
+      filter: blur(1px);
+      box-shadow: 0 0 8px 2px rgba(212,170,40,0.4), 0 0 20px 4px rgba(180,140,25,0.18);
+    }
+
+    /* Stats row */
+    #dec-port-row {
+      display: flex; align-items: stretch; justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 8px; padding: 0 2px; gap: 8px;
+    }
+    .dp-label {
+      font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.28);
+      font-family: 'IM Fell English', serif; display: block; text-transform: uppercase;
+      text-align: center; margin-bottom: 3px;
+    }
+
+    /* Decision bar text */
+    #decision-row { display: none !important; }
+    #decision-text { display: none; }
+
+    /* Balance box */
+    #balance-box {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(212,170,40,0.18);
+      background: rgba(190,150,30,0.07);
+      box-shadow: inset 0 1px 0 rgba(220,180,50,0.08);
+    }
+    #balance-val {
+      font-family: 'Cinzel', serif;
+      font-size: 26px; font-weight: 700;
+      color: #ffffff; line-height: 1;
+      letter-spacing: -0.5px;
+    }
+
+    /* Position box */
+    #position-box {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(201,162,39,0.08);
+      background: rgba(255,255,255,0.04);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: border-color 0.3s, background 0.3s;
+      min-height: 100%;
+      align-self: stretch;
+      box-sizing: border-box;
+    }
+    #position-box.long {
+      border-color: rgba(0,220,120,0.35);
+      background: rgba(0,180,80,0.1);
+    }
+    #position-box.short {
+      border-color: rgba(255,60,60,0.35);
+      background: rgba(220,40,40,0.1);
+    }
+    #position-val {
+      font-family: 'Cinzel', serif;
+      font-size: 16px; font-weight: 700;
+      color: rgba(255,255,255,0.35); line-height: 1;
+      letter-spacing: 1px; transition: color 0.3s;
+      white-space: nowrap;
+    }
+    #position-box.long  #position-val { color: #00e87a; }
+    #position-box.short #position-val { color: #ff3a3a; }
+    /* Lives — верхний левый угол графика */
+    #tb-lives {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 5px; align-items: center;
+      z-index: 10; pointer-events: none;
+    }
+    .tb-life-heart {
+      font-size: 18px; line-height: 1;
+      color: #ff3a3a;
+      transition: opacity 0.3s, filter 0.3s;
+      filter: drop-shadow(0 0 5px rgba(255,60,60,0.7));
+    }
+    .tb-life-heart.lost { opacity: 0.18; filter: grayscale(1); }
+
+    /* PNL box */
+    #pnl-box {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(201,162,39,0.08);
+      background: rgba(255,255,255,0.04);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: border-color 0.3s, background 0.3s;
+      min-height: 100%;
+      align-self: stretch;
+      box-sizing: border-box;
+    }
+    #pnl-box.profit {
+      border-color: rgba(0,220,120,0.35);
+      background: rgba(0,180,80,0.1);
+    }
+    #pnl-box.loss {
+      border-color: rgba(255,60,60,0.35);
+      background: rgba(220,40,40,0.1);
+    }
+    #pnl-val {
+      font-family: 'Cinzel', serif;
+      font-size: 20px; font-weight: 700;
+      color: rgba(255,255,255,0.3); line-height: 1;
+      letter-spacing: 0.5px; transition: color 0.3s;
+    }
+    #pnl-box.profit #pnl-val { color: #00e87a; }
+    #pnl-box.loss   #pnl-val { color: #ff3a3a; }
+
+    #trade-history-box {
+      flex: 1 0 100%;
+      display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+      min-height: 86px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(201,162,39,0.08);
+      background: rgba(255,255,255,0.04);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    #trade-history-list {
+      display: flex; flex-direction: column; gap: 4px;
+      min-height: 0; overflow: hidden;
+      font-family: 'Cinzel', serif;
+    }
+    .trade-item {
+      display: grid; grid-template-columns: 40px 1fr auto; gap: 8px;
+      align-items: center;
+      min-height: 18px;
+      color: rgba(255,255,255,0.74);
+      font-size: 10px; letter-spacing: 0.8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 4px;
+    }
+    .trade-item:first-child { border-top: 0; padding-top: 0; }
+    .trade-item.win .trade-status { color: #00e87a; }
+    .trade-item.loss .trade-status { color: #ff5757; }
+    .trade-score { color: #b7a7ff; font-weight: 800; }
+    .panel-empty {
+      color: rgba(255,255,255,0.26);
+      font-family: 'Cinzel', serif;
+      font-size: 10px; letter-spacing: 1.5px;
+      text-align: center; padding-top: 6px;
+    }
+
+    #leaderboard-panel {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      width: 168px;
+      display: none;
+      padding: 9px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(131,110,249,0.22);
+      background: rgba(8,6,20,0.78);
+      box-shadow:
+        0 0 14px rgba(131,110,249,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      z-index: 15;
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+    }
+    .leaderboard-title {
+      font-family: 'Cinzel', serif;
+      font-size: 10px; font-weight: 900; letter-spacing: 1.7px;
+      color: #b7a7ff;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    #leaderboard-list {
+      display: flex; flex-direction: column; gap: 4px;
+      font-family: 'Cinzel', serif;
+    }
+    .leaderboard-row {
+      display: grid; grid-template-columns: 20px 1fr auto; gap: 6px;
+      min-height: 17px;
+      align-items: center;
+      color: rgba(255,255,255,0.72);
+      font-size: 10px;
+      letter-spacing: 0.4px;
+    }
+    .leaderboard-row .score {
+      color: #ffffff;
+      font-weight: 900;
+    }
+
+    #wallet-panel {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(216px, 42vw);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(131,110,249,0.3);
+      background: rgba(8,6,20,0.84);
+      box-shadow:
+        0 0 16px rgba(131,110,249,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      z-index: 120;
+      backdrop-filter: blur(8px);
+    }
+    .wallet-title {
+      display: none;
+    }
+    #wallet-status {
+      min-width: 0;
+      min-height: 0;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 0;
+      color: rgba(255,255,255,0.58);
+      font-family: 'IM Fell English', serif;
+      font-size: 10px; line-height: 1.1;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #wallet-connect-btn {
+      width: auto;
+      min-width: 124px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(183,167,255,0.78);
+      background: linear-gradient(170deg, #ff7ab6 0%, #836ef9 54%, #3db8ff 100%);
+      color: #ffffff;
+      font-family: 'Cinzel', serif;
+      font-size: 10px; font-weight: 900; letter-spacing: 1.2px;
+      cursor: pointer;
+      text-shadow: 0 1px 8px rgba(30,12,80,0.75);
+      box-shadow: 0 0 16px rgba(131,110,249,0.46), inset 0 1px 0 rgba(255,255,255,0.22);
+    }
+    #wallet-connect-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+      filter: grayscale(0.45);
+    }
+
+    #daily-checkin-panel {
+      flex-shrink: 0;
+      padding: 0 8px 10px;
+    }
+    #daily-checkin-card {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(131,110,249,0.22);
+      background: rgba(131,110,249,0.06);
+      box-shadow:
+        0 0 14px rgba(131,110,249,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .daily-title {
+      font-family: 'Cinzel', serif;
+      font-size: 11px; font-weight: 800; letter-spacing: 2px;
+      color: #b7a7ff;
+    }
+    #daily-checkin-status {
+      margin-top: 4px;
+      font-family: 'IM Fell English', serif;
+      font-size: 12px; color: rgba(255,255,255,0.58);
+      line-height: 1.25;
+    }
+    #daily-checkin-btn {
+      min-width: 112px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid rgba(183,167,255,0.75);
+      background: linear-gradient(170deg, #ff7ab6 0%, #836ef9 52%, #3db8ff 100%);
+      color: #ffffff;
+      font-family: 'Cinzel', serif;
+      font-size: 11px; font-weight: 900; letter-spacing: 1.5px;
+      cursor: pointer;
+      text-shadow: 0 1px 8px rgba(30,12,80,0.65);
+      box-shadow: 0 0 18px rgba(131,110,249,0.42), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    #daily-checkin-btn:disabled {
+      opacity: 0.58;
+      cursor: default;
+      filter: grayscale(0.25);
+    }
+
+    /* Countdown ring */
+    #cdown-wrap { display: none !important; }
+
+    /* ═══════════════ GLOW STATE (winning / losing) ═══════════════ */
+    #top-bar, #chart-col, #bottom-card {
+      transition: box-shadow 0.55s ease, border-color 0.55s ease;
+    }
+
+    /* ── WINNING (green) ── */
+    #game-screen.glow-green #top-bar {
+      border-color: rgba(0,210,100,0.38);
+      box-shadow:
+        0 0 14px rgba(0,220,100,0.65),
+        0 0 32px rgba(0,190,80,0.32),
+        0 0 64px rgba(0,150,60,0.16),
+        0 8px 24px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(0,230,120,0.2),
+        inset 0 -1px 0 rgba(0,80,40,0.1),
+        inset 1px 0 0 rgba(0,180,80,0.07),
+        inset -1px 0 0 rgba(0,180,80,0.07);
+    }
+    #game-screen.glow-green #top-bar::before {
+      background: linear-gradient(90deg, transparent, rgba(0,180,80,0.5), #00e87a, #80ffb0, #00e87a, rgba(0,180,80,0.5), transparent);
+      box-shadow: 0 0 10px 3px rgba(0,220,100,0.6), 0 0 28px 6px rgba(0,190,80,0.28);
+    }
+    #game-screen.glow-green #chart-col {
+      border-color: rgba(0,210,100,0.32);
+      box-shadow:
+        0 0 18px rgba(0,220,100,0.4),
+        0 0 44px rgba(0,190,80,0.2),
+        inset 0 1px 0 rgba(0,230,100,0.08);
+    }
+    #game-screen.glow-green #bottom-card {
+      border-color: rgba(0,210,100,0.38);
+      box-shadow:
+        0 0 14px rgba(0,220,100,0.55),
+        0 0 34px rgba(0,190,80,0.28),
+        0 0 68px rgba(0,150,60,0.14),
+        0 12px 32px rgba(0,0,0,0.65),
+        0 4px 10px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(0,230,120,0.18),
+        inset 0 2px 8px rgba(0,190,80,0.07),
+        inset 0 -1px 0 rgba(0,60,30,0.1);
+    }
+    #game-screen.glow-green #bottom-card::before {
+      background: linear-gradient(90deg, transparent, rgba(0,180,80,0.4), rgba(0,230,110,0.75), rgba(0,180,80,0.4), transparent);
+      box-shadow: 0 0 8px 2px rgba(0,220,100,0.45), 0 0 20px 4px rgba(0,190,80,0.2);
+    }
+
+    /* ── LOSING (red) ── */
+    #game-screen.glow-red #top-bar {
+      border-color: rgba(220,50,50,0.42);
+      box-shadow:
+        0 0 14px rgba(230,50,50,0.65),
+        0 0 32px rgba(190,30,30,0.32),
+        0 0 64px rgba(150,20,20,0.16),
+        0 8px 24px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,120,120,0.15),
+        inset 0 -1px 0 rgba(140,20,20,0.12),
+        inset 1px 0 0 rgba(200,50,50,0.07),
+        inset -1px 0 0 rgba(200,50,50,0.07);
+    }
+    #game-screen.glow-red #top-bar::before {
+      background: linear-gradient(90deg, transparent, rgba(200,40,40,0.5), #ff3a3a, #ff8080, #ff3a3a, rgba(200,40,40,0.5), transparent);
+      box-shadow: 0 0 10px 3px rgba(230,50,50,0.6), 0 0 28px 6px rgba(190,30,30,0.28);
+    }
+    #game-screen.glow-red #chart-col {
+      border-color: rgba(220,50,50,0.32);
+      box-shadow:
+        0 0 18px rgba(230,50,50,0.4),
+        0 0 44px rgba(190,30,30,0.2),
+        inset 0 1px 0 rgba(255,80,80,0.08);
+    }
+    #game-screen.glow-red #bottom-card {
+      border-color: rgba(220,50,50,0.42);
+      box-shadow:
+        0 0 14px rgba(230,50,50,0.55),
+        0 0 34px rgba(190,30,30,0.28),
+        0 0 68px rgba(150,20,20,0.14),
+        0 12px 32px rgba(0,0,0,0.65),
+        0 4px 10px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,120,120,0.15),
+        inset 0 2px 8px rgba(200,50,50,0.06),
+        inset 0 -1px 0 rgba(100,20,20,0.1);
+    }
+    #game-screen.glow-red #bottom-card::before {
+      background: linear-gradient(90deg, transparent, rgba(200,40,40,0.4), rgba(255,70,70,0.75), rgba(200,40,40,0.4), transparent);
+      box-shadow: 0 0 8px 2px rgba(230,50,50,0.45), 0 0 20px 4px rgba(190,30,30,0.2);
+    }
+
+    /* ─── BUTTONS ─── */
+    #btns-row { display: flex; gap: 8px; }
+
+    .game-btn {
+      flex: 1; height: 64px;
+      border: none; border-radius: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      position: relative; overflow: hidden;
+      -webkit-tap-highlight-color: transparent; user-select: none;
+      font-family: 'Cinzel', serif;
+      transition: transform 0.09s ease, box-shadow 0.18s, filter 0.18s;
+    }
+    /* блик-засветка сверху — общая для обеих кнопок */
+    .game-btn::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 55%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 14px 14px 60% 60% / 14px 14px 40% 40%;
+      pointer-events: none;
+    }
+    /* нижняя тень-отражение */
+    .game-btn::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 35%;
+      background: linear-gradient(0deg, rgba(0,0,0,0.25) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .game-btn:active { transform: scale(0.96) translateY(1px); filter: brightness(0.88); }
+    .game-btn:disabled { opacity: 0.28; cursor: default; pointer-events: none; }
+
+    #btn-long {
+      background: linear-gradient(170deg, #00d96a 0%, #00a84e 55%, #008040 100%);
+      border: 1px solid rgba(0,240,120,0.45);
+      box-shadow:
+        0 0 14px rgba(0,210,100,0.5),
+        0 0 30px rgba(0,180,80,0.22),
+        0 6px 18px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(80,255,160,0.3);
+    }
+    #btn-long.selected {
+      background: linear-gradient(170deg, #00ff88 0%, #00d96a 50%, #00a050 100%);
+      box-shadow:
+        0 0 20px rgba(0,240,120,0.7),
+        0 0 44px rgba(0,200,90,0.35),
+        0 6px 18px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(120,255,180,0.4);
+    }
+
+    #btn-short {
+      background: linear-gradient(170deg, #e83030 0%, #b81818 55%, #8c1010 100%);
+      border: 1px solid rgba(255,80,80,0.35);
+      box-shadow:
+        0 0 14px rgba(230,50,50,0.5),
+        0 0 30px rgba(200,30,30,0.22),
+        0 6px 18px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,140,140,0.28);
+    }
+    #btn-short.selected {
+      background: linear-gradient(170deg, #ff5555 0%, #e83030 50%, #b81818 100%);
+      box-shadow:
+        0 0 20px rgba(255,60,60,0.7),
+        0 0 44px rgba(220,30,30,0.35),
+        0 6px 18px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,160,160,0.35);
+    }
+
+    .btn-chip { display: none; }
+    .btn-main { text-align: center; position: relative; z-index: 1; }
+    .btn-label {
+      font-size: 22px; font-weight: 700; letter-spacing: 2px; color: #fff;
+      display: block; line-height: 1;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.2);
+    }
+    .btn-arrow { display: none; }
+
+    /* ─── SIGNAL POPUP ─── */
+    #signal-popup {
+      position: absolute;
+      left: 10px; right: 10px;
+      top: 14px; bottom: auto;
+      min-height: 78px;
+      max-height: 96px;
+      background: linear-gradient(135deg, #1a1205 0%, #120c03 100%);
+      border: 1px solid rgba(201,162,39,0.38);
+      border-radius: 12px;
+      box-shadow:
+        0 0 14px rgba(190,150,30,0.32),
+        0 0 30px rgba(160,120,15,0.14),
+        inset 0 1px 0 rgba(220,180,50,0.1),
+        0 6px 18px rgba(0,0,0,0.65);
+      padding: 6px 9px;
+      display: flex; gap: 7px; align-items: center;
+      z-index: 20;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      transition: transform 0.38s cubic-bezier(0.34,1.56,0.64,1), opacity 0.26s ease;
+    }
+    #signal-popup.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: none;
+    }
+    #signal-popup.compact-persist {
+      left: 10px;
+      right: auto;
+      top: auto;
+      bottom: 10px;
+      width: 92px;
+      height: 92px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
+      gap: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: none;
+    }
+    #signal-popup.compact-persist .sig-avatar {
+      width: 92px;
+      height: 92px;
+      align-self: center;
+      box-shadow:
+        0 0 12px rgba(212,170,40,0.5),
+        0 0 28px rgba(180,140,25,0.25),
+        inset 0 1px 0 rgba(230,190,60,0.12);
+    }
+    #signal-popup.compact-persist.zeus-active .sig-avatar {
+      animation: none;
+    }
+    #signal-popup.compact-persist.zeus-flash .sig-avatar {
+      animation: zeus-avatar-pulse 0.42s ease-out 1;
+    }
+    #signal-popup.compact-persist.minotaur-up .sig-avatar {
+      border-color: rgba(0,232,122,0.55);
+      box-shadow:
+        0 0 12px rgba(0,232,122,0.55),
+        0 0 28px rgba(0,180,90,0.3),
+        inset 0 1px 0 rgba(120,255,190,0.12);
+    }
+    #signal-popup.compact-persist.minotaur-down .sig-avatar {
+      border-color: rgba(255,70,70,0.55);
+      box-shadow:
+        0 0 12px rgba(255,70,70,0.55),
+        0 0 28px rgba(220,40,40,0.3),
+        inset 0 1px 0 rgba(255,170,170,0.12);
+    }
+    @keyframes zeus-avatar-pulse {
+      0%, 100% {
+        border-color: rgba(220,180,50,0.42);
+        box-shadow:
+          0 0 12px rgba(212,170,40,0.5),
+          0 0 28px rgba(180,140,25,0.25),
+          inset 0 1px 0 rgba(230,190,60,0.12);
+      }
+      50% {
+        border-color: rgba(255,238,160,0.95);
+        box-shadow:
+          0 0 18px rgba(255,230,140,0.95),
+          0 0 36px rgba(255,210,100,0.72),
+          0 0 58px rgba(212,170,40,0.45),
+          inset 0 1px 0 rgba(255,248,210,0.22);
+      }
+    }
+    @keyframes medusa-avatar-materialize {
+      0% {
+        opacity: 0;
+        transform: scale(1.14);
+        filter: blur(6px) brightness(0.8);
+      }
+      35% {
+        opacity: 0.32;
+        transform: scale(1.09);
+        filter: blur(3px) brightness(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0) brightness(1);
+      }
+    }
+    #signal-popup.compact-persist .sig-body {
+      display: none;
+    }
+
+    /* Compact mode text adjustments for better fit */
+    #signal-popup.compact-persist .sig-avatar img {
+      object-position: center top;
+    }
+    #signal-popup.compact-persist.medusa-hidden {
+      opacity: 0 !important;
+      transform: scale(0.96);
+    }
+    #signal-popup.compact-persist.medusa-rising .sig-avatar {
+      animation: medusa-avatar-materialize 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .sig-avatar {
+      width: 46px; height: 46px; flex-shrink: 0; align-self: center;
+      border-radius: 12px;
+      background: linear-gradient(160deg, rgba(50,35,5,0.85) 0%, rgba(30,20,2,0.92) 100%);
+      border: 1.5px solid rgba(220,180,50,0.42);
+      box-shadow:
+        0 0 12px rgba(212,170,40,0.5),
+        0 0 28px rgba(180,140,25,0.25),
+        inset 0 1px 0 rgba(230,190,60,0.12);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .sig-avatar::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 12px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(220,180,50,0.14) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .sig-body {
+      flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0;
+    }
+    .sig-header {
+      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1.6px;
+      color: rgba(201,162,39,0.9); text-transform: uppercase; font-weight: 700;
+    }
+    .sig-news {
+      font-family: 'IM Fell English', serif; font-size: 11px; font-weight: 400;
+      color: #ffffff; line-height: 1.25;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .sig-bottom {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-top: 1px; padding-top: 3px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .sig-signal-label {
+      font-family: 'IM Fell English', serif; font-size: 8px; letter-spacing: 2px;
+      color: rgba(255,255,255,0.28); text-transform: uppercase; margin-bottom: 2px;
+    }
+    .sig-signal-val {
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .sig-signal-val.up { color: #00e87a; text-shadow: 0 0 12px rgba(0,220,100,0.85); }
+    .sig-signal-val.dn { color: #ff4444; text-shadow: 0 0 12px rgba(255,60,60,0.85); }
+    .sig-accuracy {
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+      color: rgba(255,190,50,0.9); letter-spacing: 0.5px; text-align: right;
+    }
+
+    /* ─── RESULT CARD ─── */
+    #result-overlay {
+      position: absolute; inset: 0;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 50;
+    }
+    #result-overlay.show { display: flex; }
+    .result-card {
+      border-radius: 18px; padding: 26px 44px; text-align: center; border: 2px solid;
+      animation: popIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn { from { transform: scale(0.35); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .result-card.win { background: rgba(4,16,10,0.97); border-color: #00e87a; box-shadow: 0 0 50px rgba(0,200,100,0.3); }
+    .result-card.lose { background: rgba(18,4,4,0.97); border-color: #ff3a3a; box-shadow: 0 0 50px rgba(255,50,50,0.25); }
+    .res-emoji { font-size: 40px; margin-bottom: 6px; }
+    .res-title { font-family: 'Cinzel', serif; font-size: 34px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+    .result-card.win  .res-title { color: #00e87a; text-shadow: 0 0 24px rgba(0,220,100,0.6); }
+    .result-card.lose .res-title { color: #ff3a3a; text-shadow: 0 0 24px rgba(255,50,50,0.6); }
+    .res-pts { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #ffd060; }
+    .res-sub { font-size: 11px; color: rgba(255,255,255,0.32); margin-top: 5px; font-family: 'IM Fell English', serif; }
+
+    /* ─── GAME OVER ─── */
+    #go-overlay {
+      position: absolute; inset: 0;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.92); z-index: 100;
+    }
+    #go-overlay.show { display: flex; }
+    .go-title { font-family: 'Cinzel', serif; font-size: 52px; font-weight: 700; color: #ff3a3a; letter-spacing: 2px; text-align: center; margin-bottom: 16px; text-shadow: 0 0 50px rgba(255,50,50,0.7); }
+    .go-score { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; color: #ffd060; margin-bottom: 10px; }
+    .go-sub { font-size: 12px; color: rgba(255,255,255,0.2); letter-spacing: 3px; font-family: 'IM Fell English', serif; }
+    .go-panel {
+      width: min(92%, 430px);
+      display: flex; flex-direction: column; align-items: center;
+      gap: 16px; text-align: center;
+    }
+    .go-actions {
+      width: 100%;
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+      margin-top: 6px;
+    }
+    .go-btn {
+      min-height: 52px; border-radius: 8px; border: 1px solid rgba(131,110,249,0.72);
+      background: linear-gradient(180deg, rgba(131,110,249,0.98), rgba(83,58,194,0.98));
+      color: #ffffff; font-family: 'Cinzel', serif; font-weight: 800;
+      font-size: 12px; letter-spacing: 1.2px; cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.18),
+        0 0 18px rgba(131,110,249,0.55),
+        0 0 44px rgba(75,201,255,0.18),
+        0 8px 28px rgba(0,0,0,0.35);
+    }
+    .go-btn.primary {
+      border-color: rgba(183,167,255,0.9);
+      background: linear-gradient(180deg, #ff7ab6 0%, #836ef9 52%, #3db8ff 100%);
+      color: #ffffff; text-shadow: 0 1px 8px rgba(30,12,80,0.7);
+    }
+    .go-btn:disabled {
+      opacity: 0.36; cursor: default; filter: grayscale(0.6);
+    }
+    #btn-continue {
+      font-size: 11px;
+      line-height: 1.15;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-7px); }
+      80% { transform: translateX(7px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* ═══════════════ BROKER SCREEN ═══════════════ */
+    #broker-screen {
+      position: absolute; inset: 0; z-index: 200;
+      background: #080600;
+      display: none; flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      /* Золотое свечение по краям */
+      box-shadow:
+        inset 0 0 60px rgba(201,162,39,0.08),
+        inset 0 0 120px rgba(150,110,10,0.05);
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding-top: 8vh;
+      /* Скрыть скроллбар */
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    #broker-screen::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+    #broker-screen.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #broker-screen::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      background:
+        radial-gradient(ellipse at 0% 50%, rgba(201,162,39,0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 50%, rgba(201,162,39,0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 0%, rgba(201,162,39,0.05) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 100%, rgba(201,162,39,0.05) 0%, transparent 40%);
+    }
+    #broker-screen.show { display: flex; }
+
+    .broker-screen-title {
+      font-family: 'Cinzel Decorative', serif; font-size: 29px; font-weight: 700;
+      letter-spacing: 5px; text-align: center;
+      background: linear-gradient(180deg, #f5e6a3 0%, #d4aa30 50%, #c9a227 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-top: 0vh; margin-bottom: 0px;
+      filter: drop-shadow(0 0 18px rgba(201,162,39,0.65));
+      position: relative; z-index: 2;
+    }
+    .broker-screen-sub {
+      font-family: 'IM Fell English', serif; font-size: 11px;
+      color: rgba(201,162,39,0.4); letter-spacing: 5px;
+      text-transform: uppercase; margin-bottom: 8px;
+      position: relative; z-index: 2;
+      width: 100%; text-align: center;
+      margin-top: -4px;
+    }
+    /* Декоративная линия под заголовком */
+    .broker-divider {
+      width: 200px; height: 1px; margin-top: 3px; margin-bottom: 0px;
+      background: linear-gradient(90deg, transparent, rgba(201,162,39,0.6), rgba(240,208,96,0.9), rgba(201,162,39,0.6), transparent);
+      position: relative; z-index: 2;
+    }
+
+    #broker-screen .broker-divider + #help-btn {
+      margin: 0 auto 5px !important;
+      transform: translateY(-1.2px) !important;
+    }
+
+    /* Help Button */
+    #help-btn {
+      position: absolute;
+      top: 3vh;
+      right: 24px;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(145deg, #2a1e08, #1a1204);
+      border: 2px solid #c9a227;
+      border-radius: 50%;
+      color: #f0d060;
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 12px rgba(201,162,39,0.45),
+                  inset 0 2px 4px rgba(255,240,180,0.2);
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.25s ease;
+      user-select: none;
+      margin: 5px auto 5px;
+    }
+
+    #broker-screen .broker-list {
+      margin-top: 0px;
+    }
+    #help-btn:hover {
+      background: linear-gradient(145deg, #d4aa30, #f0d060);
+      color: #1a1204;
+      box-shadow: 0 0 18px rgba(240,200,60,0.65),
+                  0 0 9px rgba(201,162,39,0.85);
+      transform: scale(1.06);
+    }
+    #help-btn:active {
+      transform: scale(0.94);
+    }
+
+    .broker-list {
+      display: flex; flex-direction: column; gap: 12px;
+      width: 100%; padding: 0 14px 24px;
+      position: relative; z-index: 2;
+    }
+
+    /* Rules Modal */
+    #rules-modal {
+      position: absolute; inset: 0; z-index: 300;
+      background: rgba(8,6,2,0.94);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #rules-modal.show { display: flex; }
+
+    .rules-card {
+      max-width: 420px;
+      width: 100%;
+      max-height: 85vh;
+      background: linear-gradient(160deg, #1e1406 0%, #110b02 100%);
+      border: 2px solid #c9a227;
+      border-radius: 18px;
+      box-shadow: 0 0 40px rgba(201,162,39,0.5),
+                  0 0 80px rgba(160,110,20,0.25);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .rules-header {
+      padding: 16px 20px;
+      background: linear-gradient(90deg, #2a1e08, #3a2a0e);
+      border-bottom: 1px solid #c9a227;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .rules-title {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #f0d060;
+      letter-spacing: 2px;
+    }
+    .rules-close {
+      font-size: 28px;
+      color: #c9a227;
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.25s;
+      margin-left: auto;
+    }
+    .rules-close:hover {
+      background: rgba(201,162,39,0.25);
+      color: #ffeb9e;
+      transform: rotate(90deg);
+    }
+
+    .rules-body {
+      padding: 24px 26px;
+      font-family: 'IM Fell English', serif;
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: #e8d9b0;
+      overflow-y: auto;
+      flex: 1;
+      overscroll-behavior: contain;
+    }
+    .rules-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .rules-body::-webkit-scrollbar-thumb {
+      background: rgba(201,162,39,0.5);
+      border-radius: 10px;
+    }
+    .rules-section {
+      margin-bottom: 24px;
+    }
+    .rules-subtitle {
+      font-family: 'Cinzel', serif;
+      color: #d4aa30;
+      font-size: 15px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .rules-body strong {
+      color: #f0d060;
+    }
+
+    .rules-footer {
+      padding: 16px 24px;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      color: #c9a227;
+      border-top: 1px solid rgba(201,162,39,0.3);
+      background: rgba(20,14,4,0.6);
+    }
+    .broker-card {
+      background: linear-gradient(160deg, #1a1206 0%, #120d03 100%);
+      border: 1px solid rgba(201,162,39,0.25);
+      border-radius: 16px;
+      padding: 12px 12px 10px;
+      box-shadow:
+        0 0 16px rgba(201,162,39,0.1),
+        0 0 40px rgba(150,110,10,0.06),
+        inset 0 1px 0 rgba(230,190,60,0.1);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .broker-card:active, .broker-card.selected {
+      border-color: rgba(201,162,39,0.7);
+      box-shadow:
+        0 0 24px rgba(201,162,39,0.35),
+        0 0 56px rgba(180,140,25,0.18),
+        inset 0 1px 0 rgba(240,200,80,0.18);
+    }
+    .broker-card-inner {
+      display: flex; gap: 12px; align-items: stretch; margin-bottom: 10px;
+    }
+    .broker-avatar-frame {
+      width: 78px; height: 78px; flex-shrink: 0;
+      position: relative;
+      border-radius: 12px;
+      border: 1.5px solid rgba(201,162,39,0.45);
+      background: linear-gradient(160deg, rgba(50,35,5,0.8) 0%, rgba(25,16,1,0.95) 100%);
+      box-shadow:
+        0 0 10px rgba(201,162,39,0.35),
+        0 0 22px rgba(180,140,20,0.15),
+        inset 0 1px 0 rgba(240,200,60,0.12);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+      font-size: 28px; /* placeholder emoji */
+    }
+    .broker-avatar-frame::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 12px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(220,180,50,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .broker-avatar-frame.avatar-fallback::after,
+    .sig-avatar.avatar-fallback::after {
+      content: attr(data-fallback);
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 8px; text-align: center;
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 900;
+      letter-spacing: 1.4px; color: #ffd060;
+      background:
+        radial-gradient(circle at 50% 24%, rgba(255,220,120,0.18), transparent 46%),
+        linear-gradient(150deg, rgba(54,35,5,0.9), rgba(12,8,1,0.98));
+      text-shadow: 0 0 14px rgba(212,170,40,0.55);
+    }
+    #bavatar-1.avatar-fallback::after { content: 'ZEUS'; }
+    #bavatar-2.avatar-fallback::after { content: 'MEDUSA'; }
+    #bavatar-3.avatar-fallback::after { content: 'MINOTAUR'; }
+    .broker-info-panel {
+      flex: 1; min-width: 0;
+      border-radius: 10px;
+      border: 1px solid rgba(201,162,39,0.15);
+      background: rgba(30,20,4,0.6);
+      padding: 8px 10px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .broker-name {
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+      color: #f0d060; letter-spacing: 2px; margin-bottom: 4px;
+    }
+    .broker-title-role {
+      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 1.5px;
+      color: rgba(201,162,39,0.55); margin-bottom: 7px; text-transform: uppercase;
+    }
+    .broker-desc {
+      font-family: 'IM Fell English', serif; font-size: 13px; font-style: italic;
+      color: #ffffff; line-height: 1.45;
+    }
+    .broker-quality-pct {
+      font-family: 'Cinzel', serif; font-size: 9px;
+      color: rgba(201,162,39,0.7); min-width: 28px; text-align: right;
+    }
+    .broker-select-btn {
+      width: 100%; height: 40px;
+      border: 1px solid rgba(201,162,39,0.5);
+      border-radius: 10px;
+      background: linear-gradient(170deg, rgba(60,42,6,0.9) 0%, rgba(40,28,3,0.95) 100%);
+      color: #f0d060;
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+      letter-spacing: 4px;
+      cursor: pointer;
+      box-shadow:
+        0 0 12px rgba(201,162,39,0.2),
+        inset 0 1px 0 rgba(240,200,80,0.15);
+      transition: all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+      position: relative; overflow: hidden;
+    }
+
+    .broker-select-btn:hover {
+      background: linear-gradient(170deg, #d4aa30 0%, #f0d060 45%, #e8c040 100%);
+      color: #1a1204;
+      border-color: rgba(255,230,120,0.85);
+      box-shadow:
+        0 0 18px rgba(255, 215, 80, 0.55),
+        0 0 32px rgba(201, 162, 39, 0.35),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      transform: translateY(-2px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .broker-select-btn:active {
+      transform: scale(0.95) translateY(1px);
+      box-shadow:
+        0 0 12px rgba(240, 208, 96, 0.6),
+        inset 0 3px 6px rgba(0,0,0,0.45);
+      transition: all 0.08s ease;
+    }
+    .broker-select-btn::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 55%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+      border-radius: 10px 10px 60% 60%;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      opacity: 0.65;
+    }
+
+    .broker-select-btn:hover::before {
+      opacity: 0.88;
+      background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 45%, transparent 100%);
+    }
+    .broker-select-btn:active {
+      transform: scale(0.97) translateY(1px);
+      box-shadow: 0 0 20px rgba(201,162,39,0.45), inset 0 1px 0 rgba(240,200,80,0.2);
+      background: linear-gradient(170deg, rgba(90,62,8,0.95) 0%, rgba(60,42,4,0.98) 100%);
+    }
+
+    /* Monad purple glow pass */
+    #splash .sp-title-frame,
+    #splash .sp-loader-frame,
+    .sp-ambassador,
+    #top-bar,
+    #ticker-wrap,
+    #chart-col,
+    #bottom-card,
+    #signal-popup,
+    .sig-avatar,
+    #broker-screen,
+    .broker-card,
+    .broker-avatar-frame,
+    #help-btn,
+    .rules-card {
+      border-color: rgba(131,110,249,0.45);
+      box-shadow:
+        0 0 14px rgba(131,110,249,0.5),
+        0 0 34px rgba(255,122,182,0.22),
+        0 0 68px rgba(61,184,255,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    #top-bar {
+      flex-direction: column;
+    }
+    #broker-screen {
+      box-shadow:
+        inset 0 0 70px rgba(131,110,249,0.12),
+        inset 0 0 150px rgba(61,184,255,0.06);
+    }
+    #broker-screen::before {
+      background:
+        radial-gradient(ellipse at 0% 50%, rgba(131,110,249,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 50%, rgba(255,122,182,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 0%, rgba(61,184,255,0.08) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 100%, rgba(131,110,249,0.08) 0%, transparent 40%);
+    }
+    #top-bar::before,
+    #bottom-card::before {
+      background: linear-gradient(90deg, transparent, rgba(131,110,249,0.55), #ff7ab6, #836ef9, #3db8ff, rgba(131,110,249,0.55), transparent);
+      box-shadow: 0 0 10px 3px rgba(131,110,249,0.65), 0 0 30px 7px rgba(255,122,182,0.26);
+    }
+    #top-bar::after,
+    .broker-avatar-frame::before,
+    .sig-avatar::before {
+      background: radial-gradient(ellipse at 50% 0%, rgba(131,110,249,0.2) 0%, transparent 70%);
+    }
+    .sp-logo-title,
+    .tb-title,
+    .broker-screen-title {
+      background: linear-gradient(90deg, #ff7ab6 0%, #b7a7ff 35%, #836ef9 58%, #3db8ff 100%);
+      background-size: 220% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 16px rgba(131,110,249,0.7));
+    }
+    @keyframes title-pulse {
+      0%   { filter: drop-shadow(0 0 7px rgba(131,110,249,0.55)) drop-shadow(0 0 18px rgba(61,184,255,0.16)); }
+      45%  { filter: drop-shadow(0 0 17px rgba(255,122,182,0.8)) drop-shadow(0 0 38px rgba(131,110,249,0.55)); }
+      100% { filter: drop-shadow(0 0 7px rgba(131,110,249,0.55)) drop-shadow(0 0 18px rgba(61,184,255,0.16)); }
+    }
+    .broker-card:hover {
+      border-color: rgba(183,167,255,0.8);
+      box-shadow:
+        0 0 26px rgba(131,110,249,0.48),
+        0 0 60px rgba(255,122,182,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .broker-select-btn,
+    .broker-select-btn:active {
+      border-color: rgba(131,110,249,0.7);
+      background: linear-gradient(170deg, #ff7ab6 0%, #836ef9 48%, #3db8ff 100%);
+      color: #ffffff;
+      text-shadow: 0 1px 8px rgba(30,12,80,0.65);
+      box-shadow: 0 0 20px rgba(131,110,249,0.48), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    #balance-box,
+    #position-box,
+    #pnl-box,
+    #trade-history-box {
+      border-color: rgba(131,110,249,0.14);
+      background: rgba(131,110,249,0.06);
+    }
+    #mini-wrap {
+      border-top-color: rgba(131,110,249,0.16);
+    }
+
+    @media (min-width: 900px) {
+      html, body {
+        background:
+          radial-gradient(circle at 18% 18%, rgba(131,110,249,0.16), transparent 30%),
+          radial-gradient(circle at 82% 12%, rgba(255,122,182,0.12), transparent 28%),
+          radial-gradient(circle at 50% 100%, rgba(61,184,255,0.08), transparent 34%),
+          #07050d;
+      }
+      #game-container {
+        max-width: none;
+        width: 100vw;
+        height: 100vh;
+      }
+      #splash .sp-title-frame {
+        top: 42%;
+        padding: 34px 62px 28px;
+      }
+      .sp-logo-title {
+        font-size: 68px;
+      }
+      .sp-exchange {
+        font-size: 15px;
+        letter-spacing: 14px;
+      }
+      .sp-chain {
+        font-size: 14px;
+        letter-spacing: 7px;
+      }
+      #broker-screen {
+        padding: 5.5vh 5vw 4vh;
+      }
+      .broker-screen-title {
+        font-size: 44px;
+      }
+      .broker-divider {
+        width: 340px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      #help-btn {
+        width: 34px;
+        height: 34px;
+      }
+      .broker-list {
+        width: min(1180px, 92vw);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        padding: 18px 0 0;
+      }
+      .broker-card {
+        min-height: 520px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+      }
+      .broker-card-inner {
+        flex: 1;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .broker-avatar-frame {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 0.82;
+        border-radius: 14px;
+      }
+      .broker-info-panel {
+        flex: 1;
+        padding: 14px;
+      }
+      .broker-name {
+        font-size: 18px;
+      }
+      .broker-title-role {
+        font-size: 10px;
+      }
+      .broker-desc {
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .broker-select-btn {
+        height: 52px;
+      }
+      #game-screen {
+        position: relative;
+        overflow: hidden;
+      }
+      #top-panel {
+        padding: 24px 28px 0;
+      }
+      #top-bar {
+        height: 64px;
+        border-radius: 14px;
+      }
+      .tb-title {
+        font-size: 16px;
+        letter-spacing: 5px;
+      }
+      .tb-chain {
+        font-size: 9px;
+        letter-spacing: 5px;
+      }
+      #ticker-wrap {
+        height: 36px;
+        margin: 10px 28px 0;
+      }
+      .tick-item {
+        font-size: 13px;
+        padding: 0 28px;
+      }
+      .tick-sym,
+      .tick-price,
+      .tick-chg {
+        font-size: 12px;
+      }
+      #content-area {
+        flex: 1;
+        padding: 14px 388px 118px 28px;
+      }
+      #chart-col {
+        border-radius: 14px;
+      }
+      #mini-wrap {
+        height: 64px;
+      }
+      #tb-lives {
+        top: 16px;
+        right: 16px;
+        gap: 8px;
+      }
+      .tb-life-heart {
+        font-size: 24px;
+      }
+      #pct-badge {
+        right: 18px;
+        font-size: 18px;
+        padding: 7px 15px;
+      }
+      #bets-banner {
+        bottom: 42%;
+        font-size: 18px;
+        padding: 14px 60px;
+      }
+      #signal-popup {
+        left: auto;
+        right: 18px;
+        top: 14px;
+        bottom: auto;
+        width: min(300px, 24vw);
+        min-height: 72px;
+        max-height: 90px;
+      }
+      #signal-popup.compact-persist {
+        left: auto;
+        right: 20px;
+        bottom: 20px;
+        top: auto;
+      }
+      #bottom-panel {
+        position: absolute;
+        top: 134px;
+        right: 28px;
+        bottom: 28px;
+        width: 332px;
+        padding: 0;
+        z-index: 20;
+      }
+      #bottom-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 18px;
+        border-radius: 14px;
+      }
+      #dec-port-row {
+        flex-direction: column;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+      }
+      #balance-box,
+      #position-box,
+      #pnl-box {
+        min-height: 70px;
+        padding: 16px 14px;
+      }
+      #trade-history-box {
+        min-height: 126px;
+        padding: 14px;
+      }
+      .trade-item {
+        min-height: 22px;
+        font-size: 11px;
+      }
+      #leaderboard-panel {
+        display: block;
+        left: 18px;
+        top: 18px;
+        width: 208px;
+        padding: 12px 14px;
+      }
+      #wallet-panel {
+        right: 16px;
+        width: 292px;
+        padding: 8px 10px;
+      }
+      .wallet-title {
+        display: none;
+      }
+      #wallet-status {
+        font-size: 12px;
+      }
+      #wallet-connect-btn {
+        height: 38px;
+        font-size: 11px;
+        min-width: 148px;
+      }
+      .leaderboard-title {
+        font-size: 11px;
+      }
+      .leaderboard-row {
+        font-size: 11px;
+        min-height: 20px;
+      }
+      #daily-checkin-panel {
+        position: absolute;
+        left: 28px;
+        right: 388px;
+        bottom: 28px;
+        padding: 0;
+        z-index: 18;
+      }
+      #daily-checkin-card {
+        min-height: 74px;
+        padding: 14px 16px;
+      }
+      .daily-title {
+        font-size: 13px;
+      }
+      #daily-checkin-status {
+        font-size: 14px;
+      }
+      #daily-checkin-btn {
+        min-width: 138px;
+        height: 44px;
+      }
+      .dp-label {
+        font-size: 11px;
+        letter-spacing: 3px;
+      }
+      #balance-val {
+        font-size: 42px;
+      }
+      #position-val {
+        font-size: 24px;
+      }
+      #pnl-val {
+        font-size: 30px;
+      }
+      #btns-row {
+        flex-direction: column;
+        gap: 14px;
+      }
+      .game-btn {
+        height: 74px;
+        border-radius: 14px;
+      }
+      .btn-label {
+        font-size: 21px;
+      }
+      .btn-arrow,
+      .btn-chip {
+        font-size: 22px;
+      }
+      .result-card {
+        padding: 34px 68px;
+      }
+      .go-title {
+        font-size: 64px;
+      }
+      .go-score {
+        font-size: 32px;
+      }
+      .go-panel {
+        width: 380px;
+      }
+    }
+
+    @media (max-width: 899px) {
+      #wallet-panel {
+        right: 8px;
+        width: auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+      }
+      #wallet-status {
+        display: none;
+      }
+      #wallet-connect-btn {
+        min-width: 94px;
+        height: 30px;
+        font-size: 8px;
+        letter-spacing: 0.7px;
+      }
+      .tb-title {
+        max-width: 210px;
+        text-align: center;
+      }
+    }
+
+    @media (max-height: 640px) {
+      #top-bar { height: 44px; }
+      .game-btn { height: 54px; }
+      #mini-wrap { height: 38px; }
+      #bottom-panel { padding: 6px 10px 8px; }
+      #logo-split-row { margin-bottom: 6px; }
+      #logo-panel { height: 36px; }
+    }
+    @media (max-width: 380px) {
+      #sidebar { width: 96px; }
+    }
+  </style>
+</head>
+<body>
+<div id="game-container">
+
+  <!-- ── SPLASH ── -->
+  <div id="splash">
+    <div class="sp-loader-frame">
+      <div class="sp-bar-bg"><div class="sp-bar-fill" id="load-fill"></div></div>
+      <div class="sp-pct" id="load-text">LOADING 0%</div>
+    </div>
+  </div>
+
+  <!-- ── BROKER SCREEN ── -->
+  <div id="broker-screen">
+    <div class="broker-screen-title">Select Your Broker</div>
+    
+    <div class="broker-divider"></div>
+
+    <!-- Help Button - centered between title and broker list -->
+    <div id="help-btn" onclick="showRules()" style="position:relative; margin: 5px auto 5px; top:auto; right:auto; transform:none;">
+      ?
+    </div>
+
+    <div class="broker-list">
+
+      <!-- Broker 1 -->
+      <div class="broker-card" id="bcard-1">
+        <div class="broker-card-inner">
+          <div class="broker-avatar-frame" id="bavatar-1"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/zeuspng-TLpujfTaEV-jRuBiYG6l16Z0ODo5tvR2ggDUMNdWe.webp?pXU9" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;"></div>
+          <div class="broker-info-panel">
+            <div class="broker-name">ZEUS</div>
+            <div class="broker-title-role">Manages schedules using a storm</div>
+            <div class="broker-desc">He speaks the language of lightning and thunder. His early visions are divine, but the gods grow proud, and pride blinds all prophecies.</div>
+          </div>
+        </div>
+        <button class="broker-select-btn" onclick="selectBroker(1)">✦ SELECT ✦</button>
+      </div>
+
+      <!-- Broker 2 -->
+      <div class="broker-card" id="bcard-2">
+        <div class="broker-card-inner">
+          <div class="broker-avatar-frame" id="bavatar-2"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/medusapng-o8cMb2a20X-Ait2HmZpB63kNvtFD7kSVtsHMVTvMs.webp?KRE1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;"></div>
+          <div class="broker-info-panel">
+            <div class="broker-name">MEDUSA</div>
+            <div class="broker-title-role">Just one glance at the graph changes its direction</div>
+            <div class="broker-desc">Her demeanor is cold and calculating. She sees what others dare not look at, and her gaze can strike without warning.</div>
+          </div>
+        </div>
+        <button class="broker-select-btn" onclick="selectBroker(2)">✦ SELECT ✦</button>
+      </div>
+
+      <!-- Broker 3 -->
+      <div class="broker-card" id="bcard-3">
+        <div class="broker-card-inner">
+          <div class="broker-avatar-frame" id="bavatar-3"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/minotaurpng-BM3sKO9q9d-olXOwlkw5CIbV9Ebz7ER9YbA7oFqAV.webp?SqlZ" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;"></div>
+          <div class="broker-info-panel">
+            <div class="broker-name">MINOTAUR</div>
+            <div class="broker-title-role">Punishes for making the wrong choice</div>
+            <div class="broker-desc">The Minotaur will double your winnings if you make the right choice, but will severely punish you if you make a mistake and take away 2 hearts</div>
+          </div>
+        </div>
+        <button class="broker-select-btn" onclick="selectBroker(3)">✦ SELECT ✦</button>
+      </div>
+
+
+    </div>
+  </div>
+
+  <!-- ── RULES MODAL ── -->
+  <div id="rules-modal" onclick="if(event.target.id==='rules-modal') hideRules()">
+    <div class="rules-card" onclick="event.stopImmediatePropagation()">
+      <div class="rules-header">
+        <div class="rules-title">GAME RULES</div>
+        <div class="rules-close" onclick="hideRules()">✕</div>
+      </div>
+      <div class="rules-body">
+        <div class="rules-section">
+          <div class="rules-subtitle">How to Play</div>
+          <p>• Watch the price chart and the broker's signal</p>
+          <p>• Decide whether the price will go <strong>UP (LONG)</strong> or <strong>DOWN (SHORT)</strong></p>
+          <p>• You have <strong>10 seconds</strong> to make your decision each round</p>
+          <p>• Correct prediction = +points and keep your life</p>
+          <p>• Wrong prediction = lose 1 life</p>
+        </div>
+        
+        <div class="rules-section">
+          <div class="rules-subtitle">Lives & Game Over</div>
+          <p>• You start with <strong>3 lives</strong></p>
+          <p>• Lose all lives = Game Over</p>
+          <p>• Your final score is submitted to the leaderboard</p>
+        </div>
+
+        <div class="rules-section">
+          <div class="rules-subtitle">The Brokers</div>
+          <p><strong>ZEUS</strong> — Powerful but sometimes overconfident. Strong early game.</p>
+          <p><strong>MEDUSA</strong> — Cold and calculating. Very precise but unpredictable.</p>
+          <p><strong>MINOTAUR</strong> — Wild and dangerous. Big rewards when correct, but can take 2 lives if wrong.</p>
+        </div>
+
+        <div class="rules-section">
+          <div class="rules-subtitle">Scoring</div>
+          <p>• The faster and more accurately you predict, the more points you earn.</p>
+          <p>• Try to survive as many rounds as possible.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GAME SCREEN ── -->
+  <div id="game-screen" style="display:none; flex-direction:column; width:100%; height:100%;">
+
+    <!-- TOP BAR -->
+    <div id="top-panel">
+    <div id="top-bar">
+      <span class="tb-title">OLYMPUS EXCHANGE</span>
+      <span class="tb-chain">in Monad</span>
+      <div id="wallet-panel">
+        <div class="wallet-title">MONAD WALLET</div>
+        <div id="wallet-status">Wallet not connected</div>
+        <button id="wallet-connect-btn" type="button">CONNECT WALLET</button>
+      </div>
+    </div>
+    </div><!-- /top-panel -->
+
+    <!-- TICKER -->
+    <div id="ticker-wrap">
+      <div id="ticker-track"></div>
+    </div>
+
+    <!-- CONTENT: chart col + sidebar -->
+    <div id="content-area">
+
+      <!-- Chart column -->
+      <div id="chart-col" style="flex:1; min-width:0; display:flex; flex-direction:column;">
+        <div id="chart-wrap" style="flex:1; position:relative; min-height:0;">
+          <canvas id="chart-canvas"></canvas>
+          <div id="leaderboard-panel">
+            <div class="leaderboard-title">LEADERBOARD</div>
+            <div id="leaderboard-list"></div>
+          </div>
+          <div id="tb-lives">
+            <span class="tb-life-heart">❤</span>
+            <span class="tb-life-heart">❤</span>
+            <span class="tb-life-heart">❤</span>
+          </div>
+          <div id="pct-badge"></div>
+          <div id="bets-banner"></div>
+          <div id="signal-popup">
+            <div class="sig-avatar"></div>
+            <div class="sig-body">
+              <div class="sig-header">MARKET SIGNAL</div>
+              <div class="sig-news" id="sig-news-text"></div>
+              <div class="sig-bottom">
+                <div>
+                  <div class="sig-signal-label">Signal</div>
+                  <div class="sig-signal-val" id="sig-signal-val">▲ LONG</div>
+                </div>
+                <div class="sig-accuracy" id="sig-acc-text">Accuracy: 100%</div>
+              </div>
+            </div>
+          </div>
+          <div id="result-overlay">
+            <div class="result-card" id="result-card">
+              <div class="res-emoji" id="res-emoji"></div>
+              <div class="res-title" id="res-title"></div>
+              <div class="res-pts"   id="res-pts"></div>
+              <div class="res-sub"   id="res-sub"></div>
+            </div>
+          </div>
+          <div id="go-overlay">
+            <div class="go-panel">
+              <div class="go-title">GAME<br>OVER</div>
+              <div class="go-score" id="go-score">Score: 0</div>
+              <div class="go-actions">
+                <button class="go-btn primary" id="btn-play-again" type="button">PLAY AGAIN</button>
+                <button class="go-btn" id="btn-continue" type="button">CONTINUE 50 MON</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="mini-wrap">
+          <canvas id="mini-canvas"></canvas>
+          <span id="mini-label">OVERVIEW</span>
+        </div>
+      </div>
+
+
+    </div><!-- /content-area -->
+
+    <!-- BOTTOM PANEL -->
+    <div id="bottom-panel">
+      <div id="bottom-card">
+
+        <!-- Stats row -->
+        <div id="dec-port-row">
+          <div id="position-box">
+            <span class="dp-label" style="text-align:center">POSITION</span>
+            <span id="position-val">—</span>
+          </div>
+          <div id="balance-box">
+            <span class="dp-label" style="text-align:center">BALANCE</span>
+            <span id="balance-val">0</span>
+          </div>
+          <div id="pnl-box">
+            <span class="dp-label" style="text-align:center">PNL</span>
+            <span id="pnl-val">—</span>
+          </div>
+          <div id="trade-history-box">
+            <span class="dp-label" style="text-align:center">TRADE HISTORY</span>
+            <div id="trade-history-list"></div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div id="btns-row">
+          <button class="game-btn" id="btn-long"  onclick="onDecision('up')"   disabled>
+            <div class="btn-chip" id="chip-up">▲</div>
+            <div class="btn-main">
+              <span class="btn-label">LONG</span>
+              <span class="btn-arrow">▲</span>
+            </div>
+          </button>
+          <button class="game-btn" id="btn-short" onclick="onDecision('down')" disabled>
+            <div class="btn-main">
+              <span class="btn-label">SHORT</span>
+              <span class="btn-arrow">▼</span>
+            </div>
+            <div class="btn-chip" id="chip-down">▼</div>
+          </button>
+        </div>
+
+      </div>
+    </div><!-- /bottom-panel -->
+
+    <div id="daily-checkin-panel">
+      <div id="daily-checkin-card">
+        <div>
+          <div class="daily-title">DAILY CHECK IN</div>
+          <div id="daily-checkin-status">Ready for today.</div>
+        </div>
+        <button id="daily-checkin-btn" type="button">CHECK IN</button>
+      </div>
+    </div>
+  </div><!-- /game-screen -->
+
+</div><!-- /game-container -->
+
+<script type="module">
+  (async () => {
+    try {
+      const [{ createAppKit }, { EthersAdapter }, { defineChain }] = await Promise.all([
+        import('https://esm.sh/@reown/appkit'),
+        import('https://esm.sh/@reown/appkit-adapter-ethers'),
+        import('https://esm.sh/@reown/appkit/networks')
+      ]);
+
+      const monadMainnet = defineChain({
+        id: 143,
+        caipNetworkId: 'eip155:143',
+        chainNamespace: 'eip155',
+        name: 'Monad Mainnet',
+        nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
+        rpcUrls: { default: { http: ['https://rpc.monad.xyz'] } },
+        blockExplorers: { default: { name: 'Monad Explorer', url: 'https://monadscan.com' } }
+      });
+
+      const modal = createAppKit({
+        adapters: [new EthersAdapter()],
+        networks: [monadMainnet],
+        projectId: '4783a8660e511e4dbe2d1acc3ba91817',
+        metadata: {
+          name: 'Olympus Exchange',
+          description: 'Olympus Exchange in Monad',
+          url: window.location.origin || 'http://localhost',
+          icons: [new URL('banner.png', window.location.href).href]
+        },
+        features: {
+          analytics: true,
+          email: false,
+          socials: []
+        },
+        themeMode: 'dark',
+        themeVariables: {
+          '--w3m-accent': '#836ef9',
+          '--w3m-border-radius-master': '8px'
+        }
+      });
+
+      window.olympusMonadNetwork = monadMainnet;
+      window.olympusAppKit = modal;
+      window.dispatchEvent(new CustomEvent('olympus:appkit-ready', { detail: modal }));
+    } catch (err) {
+      window.olympusAppKitError = err;
+      window.dispatchEvent(new CustomEvent('olympus:appkit-error', { detail: err }));
+      console.warn('Reown AppKit failed to load', err);
+    }
+  })();
+</script>
+
+<script>
+(() => {
+
+  // ── SPLASH ──────────────────────────────────────────────
+  // ── ASSET HELPERS ───────────────────────────────────────
+  function assetUrl(name) {
+    return name;
+  }
+
+  // ── BACKGROUND MUSIC ────────────────────────────────────
+  const _bgMusic = new Audio('https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/music4mp3-pe6WKCwXJt-IlhMDign68tn8c4ndBR2AvdsrMOXV3.mp3?TFTb');
+  const _winSfx = new Audio(assetUrl('music2.mp3'));
+  const _loseSfx = new Audio(assetUrl('music2.mp3'));
+  const _bannerSfx = new Audio('https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/music2mp3-H7bU2mcapg-PTUxIgS3cjSbic55NrqYwKmJp3CaFX.mp3?UPH0');
+  _bgMusic.volume = 0.028; _bgMusic.preload = 'auto'; _bgMusic.loop = true;
+  _winSfx.volume = 1; _winSfx.preload = 'auto';
+  _loseSfx.volume = 1; _loseSfx.preload = 'auto';
+  _bannerSfx.volume = 0.7; _bannerSfx.preload = 'auto';
+  let _bgStarted = false;
+  let _bgSeeked = false;
+  function seekBgTo20() {
+    if (_bgSeeked) return;
+    try {
+      if (_bgMusic.readyState >= 1) {
+        _bgMusic.currentTime = 20;
+        _bgSeeked = true;
+      }
+    } catch (e) {}
+  }
+  _bgMusic.addEventListener('loadedmetadata', seekBgTo20);
+  _bgMusic.addEventListener('canplay', seekBgTo20);
+  _bgMusic.addEventListener('ended', function() {
+    try { _bgMusic.currentTime = 20; } catch(e) {}
+    _bgMusic.play().catch(function(){});
+  });
+  function fadeOutAudio(audio, durationMs) {
+    try {
+      const startVolume = audio.volume;
+      const step = 50;
+      let elapsed = 0;
+      const timer = setInterval(function() {
+        elapsed += step;
+        audio.volume = Math.max(0, startVolume * (1 - elapsed / durationMs));
+        if (elapsed >= durationMs) {
+          clearInterval(timer);
+          audio.pause();
+          audio.volume = startVolume;
+        }
+      }, step);
+    } catch(e) {}
+  }
+  function scheduleFadeOut(audio, durationMs, fallbackSeconds) {
+    const totalMs = Math.max(0, ((audio.duration && isFinite(audio.duration)) ? audio.duration : fallbackSeconds) * 1000);
+    setTimeout(function() { fadeOutAudio(audio, durationMs); }, Math.max(0, totalMs - durationMs - 100));
+  }
+  function playWinMusic() {
+    if (isMuted) return;
+    try {
+      _winSfx.pause();
+      _winSfx.currentTime = 0;
+      _winSfx.volume = 1;
+      _winSfx.play().then(function() {
+        scheduleFadeOut(_winSfx, 1200, 3);
+      }).catch(function(){});
+    } catch(e) {}
+  }
+  function playLoseMusic() {
+    if (isMuted) return;
+    try {
+      _loseSfx.pause();
+      _loseSfx.currentTime = 0;
+      _loseSfx.volume = 1;
+      _loseSfx.play().then(function() {
+        scheduleFadeOut(_loseSfx, 900, 2);
+      }).catch(function(){});
+    } catch(e) {}
+  }
+  function playBannerMusic() {
+    if (isMuted) return;
+    try {
+      _bannerSfx.pause();
+      _bannerSfx.currentTime = 0;
+      _bannerSfx.volume = 0.7;
+      _bannerSfx.play().then(function() {
+        scheduleFadeOut(_bannerSfx, 1000, 2);
+      }).catch(function(){});
+    } catch(e) {}
+  }
+  function startBgMusic() {
+    if (_bgStarted || isMuted) return;
+    _bgStarted = true;
+    seekBgTo20();
+    _bgMusic.play().catch(function(){});
+  }
+  document.addEventListener('touchstart', startBgMusic, { once: true });
+  document.addEventListener('mousedown',  startBgMusic, { once: true });
+
+  const fillEl  = document.getElementById('load-fill');
+  const textEl  = document.getElementById('load-text');
+  const splash      = document.getElementById('splash');
+  splash.classList.add('video-ready');
+  const gameScr     = document.getElementById('game-screen');
+  const brokerScr   = document.getElementById('broker-screen');
+
+  (async () => {
+    try {
+      await new Promise(r => setTimeout(r, 800));
+    } catch(e) {}
+  })();
+
+  let loaded = 0;
+  const loadInt = setInterval(() => {
+    loaded = Math.min(100, loaded + 100 / (2500 / 50));
+    fillEl.style.width = loaded + '%';
+    textEl.textContent = 'LOADING ' + Math.floor(loaded) + '%';
+    if (loaded >= 100) {
+      clearInterval(loadInt);
+      splash.style.transition = 'opacity 0.5s';
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        brokerScr.style.display = 'flex';
+        void brokerScr.offsetWidth;
+        brokerScr.classList.add('show');
+      }, 500);
+    }
+  }, 50);
+
+  // ── BROKER SELECTION ────────────────────────────────────
+  let selectedBroker = 1;
+  window.selectBroker = function(id) {
+    selectedBroker = id;
+    phase = 'idle';
+    zeusLightningActive = selectedBroker === 1;
+
+    // Shared broker select sound
+    if (!isMuted) {
+      try {
+        playBrokerSelectSound();
+      } catch(e) {}
+    }
+
+    brokerScr.style.transition = 'opacity 0.4s';
+    brokerScr.style.opacity = '0';
+    setTimeout(() => {
+      brokerScr.classList.remove('show');
+      brokerScr.style.opacity = '';
+      brokerScr.style.display = 'none';
+      gameScr.style.display = 'flex';
+      requestAnimationFrame(() => { resizeAll(); startGame(); });
+    }, 400);
+  };
+
+  // Load Zeus image
+
+
+  // ── TICKER ASSETS ───────────────────────────────────────
+  (function initTicker() {
+    const r = () => Math.random();
+    const bases = [
+      { sym: 'ZEUS',  base: 1280 },
+      { sym: 'POSE',  base: 860  },
+      { sym: 'HADES', base: 666  },
+      { sym: 'ATHN',  base: 940  },
+    ];
+    const assets = bases.map(a => {
+      const price = (a.base * (0.82 + r() * 0.36)).toFixed(2);
+      const up    = r() > 0.42;
+      const pct   = ((up ? 1 : -1) * (0.4 + r() * 6.2)).toFixed(1);
+      return { sym: a.sym, price, up, pct };
+    });
+    // REMIX — easter egg: всегда зелёный, всегда самая высокая цена и %
+    const monadPrice = (9500 + r() * 1200).toFixed(0);
+    const monadPct   = (80 + r() * 180).toFixed(1);
+    // вставляем в середину (после 2-го элемента), чтобы пасхалка была видна
+    assets.splice(2, 0, { sym: 'MONAD', price: monadPrice, up: true, pct: monadPct });
+
+    const makeItem = a =>
+      `<span class="tick-item"><span class="tick-sym">${a.sym}</span>` +
+      `<span class="tick-price">💰 ${a.price}</span>` +
+      `<span class="tick-chg ${a.up ? 'up' : 'dn'}">${a.up ? '+' : '−'}${Math.abs(a.pct)}%</span></span>`;
+
+    const html = assets.map(makeItem).join('');
+    document.getElementById('ticker-track').innerHTML = html + html; // дубль для бесшовного цикла
+  })();
+
+  // ── CANVAS ──────────────────────────────────────────────
+  const canvas     = document.getElementById('chart-canvas');
+  const ctx        = canvas.getContext('2d');
+  const miniCanvas = document.getElementById('mini-canvas');
+  const mctx       = miniCanvas.getContext('2d');
+
+  function resizeAll() {
+    canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+    miniCanvas.width = miniCanvas.clientWidth; miniCanvas.height = miniCanvas.clientHeight;
+  }
+  window.addEventListener('resize', resizeAll);
+
+  // ── CONSTANTS ───────────────────────────────────────────
+  const TOTAL_PTS    = 220;
+  const ENTRY_IDX    = 70;
+  const INTRO_DUR    = 5.2;
+  const RESOLVE_DUR  = 7.2;
+  const RESULT_DUR   = 2.2;
+  const DECIDE_LIMIT = 10;
+
+  // ── STATE ───────────────────────────────────────────────
+  let lives = 3, score = 0, round = 1;
+  let phase = 'idle', playerChoice = null;
+  let pricePath = [], revealProg = 0;
+  let phaseTimer = 0, countdown = DECIDE_LIMIT;
+  let lastTs = 0, isMuted = false, audioCtx = null, rafId = null;
+  let lineCol = '#836ef9';
+  let signalDir = null, currentNews = '';
+  let zeusLightningActive = false;
+  let zeusStrikeFlash = 0;
+  let zeusPose = null; // {x, y, handX, handY}
+  let minotaurPose = null;
+  let medusaVisible = true;
+  let medusaPulseCooldown = 0;
+
+  // Zeus lightning strike sound (the one you sent)
+  const _zeusLightningSound = new Audio('https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/lightning-sharp-sonorous-blow-distant-BQzXfjP4yM-rS2N7pt2symsNR45NDbhSqVr9Cb9zD.mp3?VB4w');
+  _zeusLightningSound.preload = 'auto';
+  _zeusLightningSound.volume = 0.65;
+  let zeusAvatarPulseUntil = 0;
+  let _yMin = 0.1, _yMax = 0.9, _yMinT = 0.1, _yMaxT = 0.9;
+  let _lastTickFloor = -1;
+
+  // Broker images reused from selection/signal cards for cleaner quality
+  let zeusImg = new Image();
+  zeusImg.src = 'https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/zeuspng-TLpujfTaEV-jRuBiYG6l16Z0ODo5tvR2ggDUMNdWe.webp?pXU9';
+
+  let minotaurImg = new Image();
+  minotaurImg.src = 'https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/minotaurpng-BM3sKO9q9d-olXOwlkw5CIbV9Ebz7ER9YbA7oFqAV.webp?SqlZ';
+
+  const NEWS_POOLS = {
+    1: [ // ZEUS — divine, thundering, imperious
+      "The eagles circle thrice above the mountain. The sky father decrees the tide shall rise.",
+      "Thunderbolts gather on the horizon. What the gods ordain, no mortal hand may halt.",
+      "Olympus stirs. The golden flock moves as one, and the weak are scattered like embers.",
+      "Zeus has cast his lot. The scales of fate tip toward those who dare stand tall.",
+      "The divine fire descends. Those who bet against Olympus invite their own ruin.",
+      "The heavens grow still before the storm. Read the silence, for it speaks of power.",
+      "By the lightning of the Aegis, the current turns, and fortune favours the bold.",
+      "The oracle atop Olympus has spoken. Heed well, for the gods do not repeat themselves.",
+      "Ares sharpens his spear. The field of war shifts. Choose your side before the charge.",
+      "Even immortals must gamble. The sky father throws his bolt and watches where it lands.",
+    ],
+    2: [ // MEDUSA — cold, precise, serpentine, unsettling
+      "The serpents whisper of an omen carved in stone. Cold eyes see what warm hearts miss.",
+      "Do not look away. The pattern reveals itself only to those who dare meet its gaze.",
+      "Still waters run deep. Beneath the surface, the tide has already chosen its path.",
+      "What was once stone may turn to gold, or gold to stone. Read the signs with care.",
+      "Her gaze peers through the veil of noise. The market speaks in riddles, and she speaks in truths.",
+      "The scales have tipped in silence. Those who listened hear the hiss before the strike.",
+      "Ancient blood flows through these currents. She has seen this shape before in older seas.",
+      "Fear not the stillness. It is in stillness that the serpent coils and the world shifts.",
+      "The petrifaction comes swiftly for those who hesitate. Act, and let stone become gold.",
+      "She saw the pattern in the entrails at dawn. What the gods buried, she has unearthed.",
+    ],
+    3: [ // MINOTAUR — raw, confused, instinctual, then furious
+      "The Minotaur gives you double your reward if you make the right choice, but he punishes mistakes severely and takes away 2 hearts.",
+      "Lost corridors lead to hidden exits. Charge forward, for the maze rewards the fearless.",
+      "Even the Minotaur finds his path. Follow the blood, not the map.",
+      "The hooves pound the stone floor. Something stirs in the dark belly of the market.",
+      "He does not reason. He feels. And what he feels now shakes the pillars of the maze.",
+      "The scent of gold drives him deeper. What lies around this corner, only recklessness knows.",
+      "Labyrinth walls shift at midnight. What was the path now leads to treasure or trap.",
+      "The beast does not fear the unknown. It is the unknown that fears the beast.",
+      "Between the horns of uncertainty, a narrow gate of fortune opens. Charge before it shuts.",
+      "Rage is not blindness. It is clarity stripped of cowardice. The Minotaur has chosen.",
+    ],
+  };
+
+  const PLAYER_NAME_KEY = 'olympus-player-name';
+  const LEADERBOARD_KEY = 'olympus-real-leaderboard';
+  const DAILY_CHECKIN_KEY = 'olympus-daily-checkins';
+  const PAYMENT_WALLET = '0x19a863aeC37C83C7Cb34548c29f1F7e41BCB51Ca';
+  const PAYMENT_AMOUNT_MON = '50';
+  const PAYMENT_AMOUNT_WEI = monToWei(PAYMENT_AMOUNT_MON);
+  const MONAD_CHAIN = {
+    chainId: '0x8f',
+    chainName: 'Monad Mainnet',
+    nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
+    rpcUrls: ['https://rpc.monad.xyz'],
+    blockExplorerUrls: ['https://monadscan.com']
+  };
+  let tradeHistory = [];
+  let scoreSavedThisRun = false;
+  let currentRunId = '';
+  let walletAccount = '';
+  let walletChainId = '';
+  let appKitModal = null;
+  let appKitProvider = null;
+  let appKitReady = false;
+  let appKitLoadError = '';
+  let continuePaymentBusy = false;
+
+  function applyImageFallback(img) {
+    const frame = img.closest('.broker-avatar-frame, .sig-avatar');
+    if (!frame) return;
+    frame.classList.add('avatar-fallback');
+    img.style.display = 'none';
+  }
+
+  function wireImageFallbacks(root) {
+    root.querySelectorAll('img').forEach(img => {
+      img.addEventListener('error', () => applyImageFallback(img), { once: true });
+      if (img.complete && img.naturalWidth === 0) applyImageFallback(img);
+    });
+  }
+
+  function playAgain() {
+    startGame();
+  }
+
+  document.getElementById('btn-play-again').addEventListener('click', playAgain);
+  document.getElementById('btn-continue').addEventListener('click', handleContinueGame);
+  document.getElementById('wallet-connect-btn').addEventListener('click', handleWalletConnect);
+  document.getElementById('daily-checkin-btn').addEventListener('click', handleDailyCheckIn);
+  window.addEventListener('olympus:appkit-ready', event => {
+    attachAppKit(event.detail);
+  });
+  window.addEventListener('olympus:appkit-error', event => {
+    appKitLoadError = event.detail && event.detail.message
+      ? event.detail.message
+      : 'Reown AppKit failed to load.';
+    updateWalletUI();
+  });
+  if (window.olympusAppKit) attachAppKit(window.olympusAppKit);
+  updateWalletUI();
+  const injectedProvider = getEthereumProvider();
+  if (injectedProvider && injectedProvider.on) {
+    injectedProvider.on('accountsChanged', accounts => {
+      walletAccount = accounts && accounts[0] ? accounts[0] : '';
+      updateWalletUI();
+    });
+    injectedProvider.on('chainChanged', chainId => {
+      walletChainId = String(chainId || '').toLowerCase();
+      updateWalletUI();
+    });
+  }
+  hydrateWallet();
+  wireImageFallbacks(document);
+
+  function monToWei(amount) {
+    const [wholePart, fractionPart = ''] = String(amount).split('.');
+    const whole = BigInt(wholePart || '0') * 1000000000000000000n;
+    const fraction = (fractionPart + '000000000000000000').slice(0, 18);
+    return whole + BigInt(fraction || '0');
+  }
+
+  function hexWei(value) {
+    return '0x' + BigInt(value).toString(16);
+  }
+
+  function shortAddress(address) {
+    if (!address) return '';
+    return address.slice(0, 6) + '...' + address.slice(-4);
+  }
+
+  function normalizeChainId(chainId) {
+    if (chainId === undefined || chainId === null || chainId === '') return '';
+    const raw = String(chainId).toLowerCase();
+    if (raw.startsWith('eip155:')) {
+      const n = Number(raw.split(':')[1]);
+      return Number.isFinite(n) ? '0x' + n.toString(16) : '';
+    }
+    if (raw.startsWith('0x')) return raw;
+    const n = Number(raw);
+    return Number.isFinite(n) ? '0x' + n.toString(16) : raw;
+  }
+
+  function getAppKitModal() {
+    return appKitModal || window.olympusAppKit || null;
+  }
+
+  function readAppKitState() {
+    const modal = getAppKitModal();
+    if (!modal) return { account: walletAccount, provider: appKitProvider, chainId: walletChainId };
+    try {
+      let provider = appKitProvider;
+      if (modal.getWalletProvider) {
+        provider = modal.getWalletProvider() || modal.getWalletProvider('eip155') || provider;
+      }
+      if (!provider && modal.getProvider) provider = modal.getProvider('eip155') || provider;
+      const address = modal.getAddress ? modal.getAddress() : walletAccount;
+      const chainId = modal.getChainId ? modal.getChainId() : walletChainId;
+      const connected = modal.getIsConnected ? modal.getIsConnected() : Boolean(address || provider);
+      if (provider) appKitProvider = provider;
+      if (connected && address) walletAccount = address;
+      if (!connected && appKitReady) walletAccount = '';
+      if (chainId !== undefined && chainId !== null) walletChainId = normalizeChainId(chainId);
+    } catch (err) {}
+    return { account: walletAccount, provider: appKitProvider, chainId: walletChainId };
+  }
+
+  function attachAppKit(modal) {
+    if (!modal) return;
+    appKitModal = modal;
+    appKitReady = true;
+    appKitLoadError = '';
+    const applyState = state => {
+      if (!state) {
+        readAppKitState();
+        updateWalletUI();
+        return;
+      }
+      if (state.provider) appKitProvider = state.provider;
+      if (state.address) walletAccount = state.address;
+      if (state.isConnected === false) walletAccount = '';
+      if (state.chainId !== undefined && state.chainId !== null) walletChainId = normalizeChainId(state.chainId);
+      updateWalletUI();
+    };
+    try {
+      if (modal.subscribeProvider) modal.subscribeProvider(applyState);
+      if (modal.subscribeProviders) {
+        modal.subscribeProviders(providers => {
+          const provider = providers && (providers.eip155 || providers['eip155']);
+          if (provider) appKitProvider = provider;
+          readAppKitState();
+          updateWalletUI();
+        });
+      }
+      if (modal.subscribeAccount) modal.subscribeAccount(applyState);
+    } catch (err) {}
+    readAppKitState();
+    updateWalletUI();
+  }
+
+  function getEthereumProvider() {
+    readAppKitState();
+    return appKitProvider || window.ethereum || null;
+  }
+
+  function setWalletStatus(message, tone) {
+    const status = document.getElementById('wallet-status');
+    if (!status) return;
+    status.textContent = message || '';
+    if (tone === 'ok') status.style.color = '#7dffad';
+    else if (tone === 'error') status.style.color = '#ff6b6b';
+    else status.style.color = 'rgba(255,255,255,0.58)';
+  }
+
+  function updateWalletUI() {
+    const btn = document.getElementById('wallet-connect-btn');
+    if (!btn) return;
+    if (!appKitReady && !appKitLoadError && !walletAccount) {
+      btn.textContent = 'CONNECT WALLET';
+      setWalletStatus('Reown loading...');
+      return;
+    }
+    if (appKitLoadError && !walletAccount) {
+      btn.textContent = 'CONNECT WALLET';
+      setWalletStatus('Reown unavailable', 'error');
+      return;
+    }
+    if (walletAccount) {
+      btn.textContent = shortAddress(walletAccount);
+      if (walletChainId && walletChainId !== MONAD_CHAIN.chainId.toLowerCase()) {
+        setWalletStatus('Switch to Monad Mainnet', 'error');
+      } else {
+        setWalletStatus('Connected on Monad', 'ok');
+      }
+    } else {
+      btn.textContent = 'CONNECT WALLET';
+      setWalletStatus('Wallet not connected');
+    }
+  }
+
+  async function ensureMonadNetwork(provider) {
+    if (!provider) throw new Error('No EVM wallet found. Install MetaMask or Rabby.');
+    const targetChainId = MONAD_CHAIN.chainId.toLowerCase();
+    const currentChainId = String(await provider.request({ method: 'eth_chainId' })).toLowerCase();
+    walletChainId = currentChainId;
+    if (currentChainId === targetChainId) return;
+
+    const modal = getAppKitModal();
+    if (modal && modal.switchNetwork && window.olympusMonadNetwork) {
+      try {
+        await modal.switchNetwork(window.olympusMonadNetwork);
+        readAppKitState();
+        const switchedChainId = String(await provider.request({ method: 'eth_chainId' })).toLowerCase();
+        walletChainId = switchedChainId;
+        if (switchedChainId === targetChainId) return;
+      } catch (err) {}
+    }
+
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: MONAD_CHAIN.chainId }]
+      });
+    } catch (err) {
+      if (err && err.code === 4902) {
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [MONAD_CHAIN]
+        });
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: MONAD_CHAIN.chainId }]
+        });
+      } else {
+        throw err;
+      }
+    }
+
+    const afterSwitch = String(await provider.request({ method: 'eth_chainId' })).toLowerCase();
+    walletChainId = afterSwitch;
+    if (afterSwitch !== targetChainId) throw new Error('Switch wallet to Monad Mainnet.');
+  }
+
+  async function connectWallet() {
+    const modal = getAppKitModal();
+    if (modal) {
+      setWalletStatus(walletAccount ? 'Wallet connected' : 'Choose wallet in Reown...');
+      await modal.open({ view: walletAccount ? 'Account' : 'Connect', namespace: 'eip155' });
+      return waitForWalletConnection();
+    }
+
+    const provider = getEthereumProvider();
+    if (!provider) throw new Error('No EVM wallet found. Install MetaMask or Rabby.');
+    setWalletStatus('Connecting...');
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    if (!accounts || !accounts.length) throw new Error('Wallet connection was not approved.');
+    await ensureMonadNetwork(provider);
+    walletAccount = accounts[0];
+    updateWalletUI();
+    return walletAccount;
+  }
+
+  async function waitForWalletConnection() {
+    const started = Date.now();
+    while (Date.now() - started < 120000) {
+      const state = readAppKitState();
+      const provider = state.provider || getEthereumProvider();
+      const account = state.account || walletAccount;
+      if (provider && account) {
+        await ensureMonadNetwork(provider);
+        walletAccount = account;
+        updateWalletUI();
+        return walletAccount;
+      }
+      await new Promise(resolve => setTimeout(resolve, 450));
+    }
+    throw new Error('Wallet connection was not completed.');
+  }
+
+  async function hydrateWallet() {
+    if (getAppKitModal()) {
+      readAppKitState();
+      updateWalletUI();
+      return;
+    }
+    const provider = getEthereumProvider();
+    if (!provider) return;
+    try {
+      const accounts = await provider.request({ method: 'eth_accounts' });
+      walletAccount = accounts && accounts[0] ? accounts[0] : '';
+      walletChainId = String(await provider.request({ method: 'eth_chainId' })).toLowerCase();
+      updateWalletUI();
+    } catch (err) {
+      walletAccount = '';
+      walletChainId = '';
+      updateWalletUI();
+    }
+  }
+
+  async function handleWalletConnect() {
+    const btn = document.getElementById('wallet-connect-btn');
+    try {
+      if (btn) btn.disabled = true;
+      const modal = getAppKitModal();
+      if (modal) {
+        readAppKitState();
+        await modal.open({ view: walletAccount ? 'Account' : 'Connect', namespace: 'eip155' });
+        setWalletStatus(walletAccount ? 'Connected on Monad' : 'Choose wallet in Reown...');
+      } else {
+        await connectWallet();
+      }
+    } catch (err) {
+      setWalletStatus(err && err.message ? err.message : 'Connection failed.', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+      if (walletAccount) updateWalletUI();
+    }
+  }
+
+  function setContinueBusy(busy) {
+    continuePaymentBusy = busy;
+    const continueBtn = document.getElementById('btn-continue');
+    const playBtn = document.getElementById('btn-play-again');
+    if (continueBtn) {
+      continueBtn.disabled = busy;
+      continueBtn.textContent = busy ? 'PAYING...' : 'CONTINUE 50 MON';
+    }
+    if (playBtn) playBtn.disabled = busy;
+  }
+
+  async function waitForReceipt(provider, txHash) {
+    const started = Date.now();
+    while (Date.now() - started < 90000) {
+      const receipt = await provider.request({
+        method: 'eth_getTransactionReceipt',
+        params: [txHash]
+      });
+      if (receipt) return receipt;
+      await new Promise(resolve => setTimeout(resolve, 2200));
+    }
+    throw new Error('Payment sent, confirmation timed out.');
+  }
+
+  async function verifyPayment(provider, txHash, account) {
+    const receipt = await waitForReceipt(provider, txHash);
+    if (receipt.status && receipt.status !== '0x1') throw new Error('Payment transaction failed.');
+    const tx = await provider.request({
+      method: 'eth_getTransactionByHash',
+      params: [txHash]
+    });
+    if (!tx) throw new Error('Unable to read payment transaction.');
+    if (String(tx.from).toLowerCase() !== String(account).toLowerCase()) {
+      throw new Error('Payment sender mismatch.');
+    }
+    if (String(tx.to).toLowerCase() !== PAYMENT_WALLET.toLowerCase()) {
+      throw new Error('Payment recipient mismatch.');
+    }
+    if (BigInt(tx.value || '0x0') < PAYMENT_AMOUNT_WEI) {
+      throw new Error('Payment amount is lower than 50 MON.');
+    }
+    return receipt;
+  }
+
+  async function handleContinueGame() {
+    if (phase !== 'gameover' || continuePaymentBusy) return;
+    let provider = getEthereumProvider();
+    try {
+      setContinueBusy(true);
+      setWalletStatus('Preparing 50 MON payment...');
+      const account = walletAccount || await connectWallet();
+      provider = getEthereumProvider();
+      if (!provider) throw new Error('Wallet provider is not ready.');
+      await ensureMonadNetwork(provider);
+      setWalletStatus('Confirm payment in wallet...');
+      const txHash = await provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: PAYMENT_WALLET,
+          value: hexWei(PAYMENT_AMOUNT_WEI)
+        }]
+      });
+      setWalletStatus('Confirming ' + shortAddress(txHash) + '...');
+      await verifyPayment(provider, txHash, account);
+      setWalletStatus('Payment confirmed. Continuing...', 'ok');
+      continueGameAfterPayment();
+    } catch (err) {
+      setWalletStatus(err && err.message ? err.message : 'Payment was not completed.', 'error');
+    } finally {
+      setContinueBusy(false);
+    }
+  }
+
+  function continueGameAfterPayment() {
+    document.getElementById('go-overlay').classList.remove('show');
+    document.getElementById('game-screen').classList.remove('glow-green','glow-red');
+    lives = 1;
+    round++;
+    playerChoice = null;
+    phase = 'idle';
+    phaseTimer = 0;
+    countdown = DECIDE_LIMIT;
+    revealProg = 0;
+    hideResult();
+    setBtns(false);
+    setPositionBox(null);
+    updateHUD();
+    startRound();
+    if (!rafId) { lastTs = performance.now(); rafId = requestAnimationFrame(loop); }
+  }
+
+  // ── AUDIO ───────────────────────────────────────────────
+  function ac() {
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    return audioCtx;
+  }
+  function tone(f,t,v,d,w) {
+    if (isMuted) return;
+    const a=ac(),o=a.createOscillator(),g=a.createGain();
+    o.type=t; o.frequency.value=f;
+    g.gain.setValueAtTime(v,w); g.gain.exponentialRampToValueAtTime(0.001,w+d);
+    o.connect(g); g.connect(a.destination); o.start(w); o.stop(w+d+0.01);
+  }
+  function playWin()   { const t=ac().currentTime; tone(440,'sine',0.28,0.14,t); tone(550,'sine',0.28,0.14,t+0.12); tone(660,'sine',0.28,0.22,t+0.24); }
+  function playLose() {
+    if (isMuted) return;
+    try {
+      const a = ac(), t = a.currentTime;
+      // Буфер шума для удара
+      const buf = a.createBuffer(1, a.sampleRate * 0.18, a.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+      const src = a.createBufferSource();
+      src.buffer = buf;
+      // Низкочастотный фильтр — делает звук глухим ударом
+      const flt = a.createBiquadFilter();
+      flt.type = 'lowpass'; flt.frequency.value = 120;
+      const g = a.createGain();
+      g.gain.setValueAtTime(1.1, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      src.connect(flt); flt.connect(g); g.connect(a.destination);
+      src.start(t); src.stop(t + 0.19);
+    } catch(e) {}
+  }
+  function playClick() { if (!isMuted) tone(600,'sine',0.12,0.06,ac().currentTime); }
+  let brokerSelectSound = null;
+
+  function playBrokerSelectSound() {
+    if (isMuted) return;
+
+    if (!brokerSelectSound) {
+      brokerSelectSound = new Audio('https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/iron-off-button-GMe822qlBs-jNE02CJXQX8N2ZOEaz7i5mOEowQclB.mp3?dgKE');
+      brokerSelectSound.volume = 0.23;   // 50% quieter than before (was 0.46)
+      brokerSelectSound.preload = 'auto';
+    }
+
+    try {
+      const s = brokerSelectSound;
+      s.currentTime = 0;
+      s.play().catch(() => {});
+    } catch(e) {
+      console.log("broker select sound error", e);
+    }
+  }
+
+
+  // ── CHART SOUND ──────────────────────────────────────────
+  const _tickA = new Audio('https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/musicmp3-dji5fvNTKu-3VvjRJ9VEvgX9TXw6zfXnDQjJHRJA4.mp3?RoP6');
+  const _tickB = new Audio('https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/musicmp3-dji5fvNTKu-3VvjRJ9VEvgX9TXw6zfXnDQjJHRJA4.mp3?RoP6');
+  _tickA.preload = 'auto'; _tickA.volume = 0.38;
+  _tickB.preload = 'auto'; _tickB.volume = 0.38;
+  _tickA.load(); _tickB.load();
+  let _tickAB = false;
+
+  function playChartTick() {
+    if (isMuted) return;
+    try {
+      const a = _tickAB ? _tickB : _tickA;
+      _tickAB = !_tickAB;
+      a.currentTime = 0;
+      a.play().catch(function(){});
+    } catch(e) {}
+  }
+
+  // Разблокировка AudioContext при первом касании
+  document.addEventListener('touchstart', () => {
+    try { const a = ac(); if (a.state === 'suspended') a.resume(); } catch(e) {}
+  }, { once: true });
+  document.addEventListener('mousedown', () => {
+    try { const a = ac(); if (a.state === 'suspended') a.resume(); } catch(e) {}
+  }, { once: true });
+
+  function safeHaptic() {
+    try {
+      if (navigator.vibrate) navigator.vibrate(24);
+    } catch(e) {}
+  }
+
+  // ── PRICE PATH ──────────────────────────────────────────
+  function generatePath(forcedDir) {
+    // Сила тренда после entry — умеренная, реалистичная
+    const trendStrength = 0.0028 + Math.random() * 0.0018;
+    const pts = [0.5];
+    let vel = 0;
+    let vol = 0.018; // текущая волатильность (динамическая)
+
+    for (let i = 1; i < TOTAL_PTS; i++) {
+      const isPost = i > ENTRY_IDX;
+
+      // Динамическая волатильность: иногда скачок (новость), потом затухает
+      if (Math.random() < 0.025) vol = 0.038 + Math.random() * 0.02;
+      else vol = vol * 0.88 + 0.018 * 0.12;
+
+      const noise   = (Math.random() - 0.5) * vol * 2;
+      // До entry — слабый мягкий дрейф к центру (консолидация)
+      const revert  = (0.5 - pts[i-1]) * (isPost ? 0.004 : 0.012);
+      // После entry — тренд включается плавно
+      const trend   = isPost
+        ? (forcedDir === 'up' ? trendStrength : forcedDir === 'down' ? -trendStrength : 0)
+        : 0;
+
+      vel = vel * 0.84 + noise + revert + trend;
+
+      let next = pts[i-1] + vel;
+      // Мягкий отскок от границ
+      if (next > 0.91) { next = 0.91; vel *= -0.55; }
+      if (next < 0.09) { next = 0.09; vel *= -0.55; }
+      pts.push(next);
+    }
+    return pts;
+  }
+
+  // ── DRAWING ─────────────────────────────────────────────
+  // Два viewport-а:
+  // Pre-entry  (intro/deciding):  индексы 0..ENTRY_IDX  → 0..W  (точка входа у правого края)
+  // Post-entry (resolving/result): индексы ENTRY_IDX..END → 0..W  (точка входа у левого края)
+  function isPost() {
+    return phase === 'resolving' || phase === 'result' || phase === 'gameover';
+  }
+
+  function toX(i, W) {
+    if (isPost()) {
+      // Entry = левый край, новое движение заполняет весь экран
+      return ((i - ENTRY_IDX) / (TOTAL_PTS - 1 - ENTRY_IDX)) * W;
+    } else {
+      return (i / ENTRY_IDX) * W;
+    }
+  }
+  function toY(v, H) { return (1 - (v - _yMin) / (_yMax - _yMin)) * H; }
+
+  function getTip() {
+    const W = canvas.width, H = canvas.height;
+    if (isPost()) {
+      const fl = Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX), TOTAL_PTS-1);
+      const fr = revealProg - fl;
+      if (fl >= TOTAL_PTS-1 || fr < 0.001) return {x:toX(fl,W), y:toY(pricePath[fl],H), idx:fl};
+      return {
+        x: toX(fl,W) + fr*(toX(fl+1,W)-toX(fl,W)),
+        y: toY(pricePath[fl],H) + fr*(toY(pricePath[fl+1],H)-toY(pricePath[fl],H)),
+        idx: fl
+      };
+    } else {
+      const fl = Math.min(Math.floor(revealProg), ENTRY_IDX);
+      const fr = revealProg - fl;
+      if (fl >= ENTRY_IDX || fr < 0.001) return {x:toX(fl,W), y:toY(pricePath[fl],H), idx:fl};
+      return {
+        x: toX(fl,W) + fr*(toX(fl+1,W)-toX(fl,W)),
+        y: toY(pricePath[fl],H) + fr*(toY(pricePath[fl+1],H)-toY(pricePath[fl],H)),
+        idx: fl
+      };
+    }
+  }
+
+  function drawPath(c, pts, from, n, tipX, tipY) {
+    const W = c.canvas.width, H = c.canvas.height;
+    c.beginPath();
+    c.moveTo(toX(from, W), toY(pts[from], H));
+    for (let i = from+1; i < n; i++) {
+      const x0=toX(i-1,W), y0=toY(pts[i-1],H);
+      const x1=toX(i,  W), y1=toY(pts[i],  H);
+      c.quadraticCurveTo(x0, y0, (x0+x1)/2, (y0+y1)/2);
+    }
+    c.lineTo(tipX, tipY);
+  }
+
+  // Многослойное свечение линии
+  function drawGlowLine(c, pts, from, n, tipX, tipY, col) {
+    c.save();
+    c.lineJoin = 'round'; c.lineCap = 'round'; c.strokeStyle = col;
+    // Слой 0 — дальнее широкое свечение
+    drawPath(c, pts, from, n, tipX, tipY);
+    c.lineWidth = 22; c.globalAlpha = 0.04; c.shadowBlur = 0; c.stroke();
+    // Слой 1 — широкое свечение
+    drawPath(c, pts, from, n, tipX, tipY);
+    c.lineWidth = 14; c.globalAlpha = 0.08; c.stroke();
+    // Слой 2 — среднее свечение
+    drawPath(c, pts, from, n, tipX, tipY);
+    c.lineWidth = 8; c.globalAlpha = 0.18; c.stroke();
+    // Слой 3 — ближнее свечение
+    drawPath(c, pts, from, n, tipX, tipY);
+    c.lineWidth = 5; c.globalAlpha = 0.35; c.shadowColor = col; c.shadowBlur = 8; c.stroke();
+    // Слой 4 — основная линия
+    drawPath(c, pts, from, n, tipX, tipY);
+    c.lineWidth = 3; c.globalAlpha = 1; c.shadowColor = col; c.shadowBlur = 14; c.stroke();
+    // Слой 5 — тонкая яркая линия поверх (блик)
+    drawPath(c, pts, from, n, tipX, tipY);
+    c.lineWidth = 1.2; c.globalAlpha = 0.7; c.strokeStyle = '#ffffff'; c.shadowBlur = 0; c.stroke();
+    c.restore();
+  }
+
+  // Кружок на конце линии
+  function drawTipDot(c, x, y, col) {
+    // Внешнее свечение пульсирующее
+    c.save();
+    c.beginPath(); c.arc(x, y, 13, 0, Math.PI*2);
+    c.fillStyle = col.replace(')', ',0.08)').replace('rgb','rgba');
+    // Fallback для hex
+    c.globalAlpha = 0.15; c.fillStyle = col;
+    c.shadowColor = col; c.shadowBlur = 20;
+    c.fill();
+
+    // Средний ореол
+    c.beginPath(); c.arc(x, y, 8, 0, Math.PI*2);
+    c.globalAlpha = 0.25;
+    c.fill();
+
+    // Белое кольцо
+    c.beginPath(); c.arc(x, y, 6, 0, Math.PI*2);
+    c.globalAlpha = 1;
+    c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 1.5;
+    c.shadowColor = col; c.shadowBlur = 12;
+    c.stroke();
+
+    // Залитый цветной круг внутри
+    c.beginPath(); c.arc(x, y, 4.5, 0, Math.PI*2);
+    c.fillStyle = col; c.globalAlpha = 1;
+    c.shadowColor = col; c.shadowBlur = 16;
+    c.fill();
+
+    // Белая точка в центре
+    c.beginPath(); c.arc(x, y, 1.8, 0, Math.PI*2);
+    c.fillStyle = '#ffffff'; c.shadowBlur = 0;
+    c.fill();
+    c.restore();
+  }
+
+  // ── MAIN CHART ──────────────────────────────────────────
+  function drawChart() {
+    const W = canvas.width, H = canvas.height;
+    if (!W||!H) return;
+
+    // ── Dynamic Y scale ──────────────────────────────────
+    if (pricePath.length >= 2) {
+      const tipIdx  = Math.min(Math.max(Math.floor(revealProg), 0), pricePath.length - 1);
+      const curTip  = pricePath[tipIdx];
+      const fromIdx = isPost() ? ENTRY_IDX : 0;
+      const endIdx  = Math.max(fromIdx, tipIdx);
+      let vMin = pricePath[fromIdx], vMax = pricePath[fromIdx];
+      for (let i = fromIdx + 1; i <= endIdx; i++) {
+        if (pricePath[i] < vMin) vMin = pricePath[i];
+        if (pricePath[i] > vMax) vMax = pricePath[i];
+      }
+      // Ensure target always includes current tip
+      vMin = Math.min(vMin, curTip);
+      vMax = Math.max(vMax, curTip);
+      const range = Math.max(0.08, vMax - vMin);
+      const pad   = range * 0.42;
+      _yMinT = vMin - pad;
+      _yMaxT = vMax + pad;
+    }
+    _yMin += (_yMinT - _yMin) * 0.055;
+    _yMax += (_yMaxT - _yMax) * 0.055;
+
+    ctx.clearRect(0,0,W,H);
+
+    // Background — многослойный атмосферный фон
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0, '#120d03'); bg.addColorStop(0.5, '#0e0a02'); bg.addColorStop(1, '#0a0700');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    // Radial glow center — легкое атмосферное свечение снизу
+    const rg = ctx.createRadialGradient(W/2, H*0.7, 0, W/2, H*0.7, W*0.8);
+    rg.addColorStop(0, 'rgba(180,130,20,0.06)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg; ctx.fillRect(0,0,W,H);
+
+    // Horizontal grid lines — cyan-tinted, subtle
+    ctx.lineWidth = 1;
+    for (let i=1;i<6;i++) {
+      const y = H*i/6;
+      ctx.strokeStyle = i===3 ? 'rgba(131,110,249,0.09)' : 'rgba(255,255,255,0.03)';
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+    // Vertical grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+    for (let i=1;i<5;i++) {
+      ctx.beginPath(); ctx.moveTo(W*i/5,0); ctx.lineTo(W*i/5,H); ctx.stroke();
+    }
+
+    // Zeus lightning: only on sharp end-of-chart moves
+    function lightningSeed(n) {
+      const s = Math.sin(n * 127.1 + 311.7) * 43758.5453123;
+      return s - Math.floor(s);
+    }
+
+
+    function makeLightningPath(startX, startY, endX, endY, seed, sway) {
+      const pts = [{ x: startX, y: startY }];
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const steps = 16;
+      for (let i = 1; i < steps; i++) {
+        const t = i / steps;
+        const nx = startX + dx * t;
+        const ny = startY + dy * t;
+        const off = (lightningSeed(seed + i * 1.73) - 0.5) * sway * (0.35 + t * 0.85);
+        const perpX = -dy;
+        const perpY = dx;
+        const len = Math.hypot(perpX, perpY) || 1;
+        pts.push({ x: nx + (perpX / len) * off, y: ny + (perpY / len) * off });
+      }
+      pts.push({ x: endX, y: endY });
+      return pts;
+    }
+    function strokeLightning(points, alpha, width, color, blur) {
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = color;
+      ctx.shadowBlur = blur;
+      ctx.stroke();
+    }
+    function drawLightningBolt(startX, startY, endX, endY, intensity, seed) {
+      const main = makeLightningPath(startX, startY, endX, endY, seed, 34 * intensity);
+      ctx.save();
+      strokeLightning(main, 0.08, 7 * intensity, 'rgba(255,255,255,0.18)', 10 * intensity);
+      strokeLightning(main, 0.16, 3.4 * intensity, 'rgba(140,140,140,0.95)', 4 * intensity);
+      strokeLightning(main, 0.32, 1.7 * intensity, 'rgba(255,214,92,0.98)', 1.8 * intensity);
+      strokeLightning(main, 0.62, 0.9 * intensity, 'rgba(255,255,255,0.98)', 0);
+      for (let i = 2; i < main.length - 2; i++) {
+        if (lightningSeed(seed * 3 + i) > 0.72) {
+          const p = main[i];
+          const dir = lightningSeed(seed * 5 + i * 2) > 0.5 ? 1 : -1;
+          const bx = p.x + dir * (16 + lightningSeed(seed + i) * 24) * intensity;
+          const by = p.y + (8 + lightningSeed(seed + i * 4) * 24) * intensity;
+          const branch = makeLightningPath(p.x, p.y, bx, by, seed + i * 9, 12 * intensity);
+          strokeLightning(branch, 0.1, 1.8 * intensity, 'rgba(255,214,92,0.85)', 1.2 * intensity);
+          strokeLightning(branch, 0.24, 0.8 * intensity, 'rgba(255,255,255,0.95)', 0);
+        }
+      }
+      ctx.restore();
+    }
+
+    let pendingZeusLightning = null;
+
+    // Zeus pose anchor for lightning only
+    if (zeusLightningActive && phase === 'resolving' && selectedBroker === 1) {
+      const avatarRect = document.querySelector('#signal-popup.compact-persist .sig-avatar')?.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      if (avatarRect && canvasRect) {
+        zeusPose = {
+          handX: avatarRect.left - canvasRect.left + avatarRect.width * 0.78,
+          handY: avatarRect.top - canvasRect.top + avatarRect.height * 0.32
+        };
+      } else {
+        zeusPose = null;
+      }
+    } else {
+      zeusPose = null;
+    }
+
+    if (!(selectedBroker === 3 && phase === 'resolving')) {
+      minotaurPose = null;
+    }
+
+    if (zeusLightningActive && phase === 'resolving' && selectedBroker === 1) {
+      const fl = Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX + 2), TOTAL_PTS - 1);
+      const prev = pricePath[Math.max(ENTRY_IDX, fl - 1)] || pricePath[ENTRY_IDX];
+      const cur = pricePath[fl] || prev;
+      const prev2 = pricePath[Math.max(ENTRY_IDX, fl - 2)] || prev;
+      const deltaNow = Math.abs(cur - prev);
+      const deltaPrev = Math.abs(prev - prev2);
+      const sharpMove = Math.max(deltaNow, deltaPrev);
+      const introPhase = fl < ENTRY_IDX + 28;
+      const midPhase = fl >= ENTRY_IDX + 28 && fl < TOTAL_PTS - 34;
+      const endPhase = fl >= TOTAL_PTS - 34;
+      let strikeChance = 0;
+      let intensityMult = 0;
+
+      // Much more aggressive lightning for Zeus
+      if (introPhase && sharpMove > 0.014) {
+        strikeChance = 0.042;
+        intensityMult = 11;
+      } else if (midPhase && sharpMove > 0.012) {
+        strikeChance = 0.065;
+        intensityMult = 14;
+      } else if (endPhase && sharpMove > 0.009) {
+        strikeChance = 0.11;
+        intensityMult = 26;
+      }
+
+      strikeChance *= 0.7;
+      if (strikeChance > 0 && Math.random() < strikeChance) {
+        zeusStrikeFlash = Math.min(1, 0.22 + sharpMove * intensityMult * 0.8);
+        pendingZeusLightning = {
+          fl,
+          flash: zeusStrikeFlash,
+          stage: introPhase ? 'intro' : midPhase ? 'mid' : 'end'
+        };
+
+        // === GUARANTEED SOUND + VISUAL FOR ZEUS LIGHTNING ===
+        if (!isMuted) {
+          try {
+            _zeusLightningSound.pause();
+            _zeusLightningSound.currentTime = 0;
+            _zeusLightningSound.volume = Math.min(0.65, 0.35 + sharpMove * 3.2);
+            _zeusLightningSound.play().catch(() => {});
+          } catch(e) {}
+        }
+        zeusAvatarPulseUntil = performance.now() + 520;
+
+        const zeusPopup = document.getElementById('signal-popup');
+        if (zeusPopup && zeusPopup.classList.contains('compact-persist') && selectedBroker === 1) {
+          zeusPopup.classList.remove('zeus-flash');
+          void zeusPopup.offsetWidth;
+          zeusPopup.classList.add('zeus-flash');
+        }
+      } else {
+        zeusStrikeFlash *= 0.48;
+      }
+    } else {
+      zeusStrikeFlash *= 0.78;
+    }
+
+    // ── MEDUSA FRAME: HIDE THEN DRAMATIC REAPPEAR ON SHARP UP ──
+    if (selectedBroker === 2 && phase === 'resolving') {
+      const popup = document.getElementById('signal-popup');
+      if (!popup || !popup.classList.contains('compact-persist')) return;
+
+      const fl = Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX + 3), TOTAL_PTS - 1);
+      const prev = pricePath[Math.max(ENTRY_IDX, fl - 2)] || pricePath[ENTRY_IDX];
+      const cur = pricePath[fl] || prev;
+      const delta = cur - prev;
+
+      // First time after bet - hide the frame
+      if (!popup.dataset.medusaHidden && revealProg < ENTRY_IDX + 18) {
+        popup.style.transition = 'opacity 0.6s ease-out';
+        popup.style.opacity = '0';
+        popup.dataset.medusaHidden = 'true';
+        popup.dataset.medusaRevealed = 'false';
+        return;
+      }
+
+      // Sharp upward move → dramatic reappear
+      if (delta > 0.027 && popup.dataset.medusaHidden === 'true' && popup.dataset.medusaRevealed !== 'true') {
+        popup.style.transition = 'opacity 0.45s cubic-bezier(0.23,1,0.32,1), transform 0.55s cubic-bezier(0.34,1.56,0.64,1)';
+        popup.style.opacity = '1';
+        popup.style.transform = 'scale(1.18)';
+        
+        setTimeout(() => {
+          if (popup.classList.contains('compact-persist')) {
+            popup.style.transition = 'opacity 0.7s ease, transform 0.8s ease';
+            popup.style.transform = 'scale(1)';
+          }
+        }, 280);
+
+        popup.dataset.medusaRevealed = 'true';
+      }
+    }
+
+
+    // Price level labels on Y-axis
+    ctx.font = '500 9px IM Fell English, serif'; ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(183,167,255,0.28)';
+    ['75%','50%','25%'].forEach((lbl,i) => {
+      ctx.fillText(lbl, 6, H*(i+1)/4 + 4);
+    });
+
+    if (pricePath.length < 2) return;
+
+    const ep = pricePath[ENTRY_IDX];
+    const ey = toY(ep, H);
+    const tip = getTip();
+
+    const curPrice = pricePath[tip.idx];
+    lineCol = isPost()
+      ? (curPrice >= ep ? '#00e87a' : '#ff3a3a')
+      : '#836ef9';
+    const isWinning = lineCol === '#00e87a';
+
+    if (pendingZeusLightning) {
+      const fl = pendingZeusLightning.fl;
+      const tipX = tip.x;
+      const tipY = tip.y;
+      const stage = pendingZeusLightning.stage || 'end';
+      const fromTop = lightningSeed(fl * 1.13 + round) > 0.5;
+      const spread = stage === 'end' ? 0.22 : stage === 'mid' ? 0.3 : 0.34;
+      const startX = zeusPose
+        ? zeusPose.handX + (lightningSeed(fl * 2.7) - 0.5) * 14
+        : Math.max(10, Math.min(W - 10, tipX + (lightningSeed(fl * 2.7) - 0.5) * W * spread));
+      const startY = zeusPose
+        ? zeusPose.handY + (lightningSeed(fl * 3.1) - 0.5) * 12
+        : fromTop
+          ? -8
+          : stage === 'intro'
+            ? H * (0.05 + lightningSeed(fl * 3.1) * 0.22)
+            : H * (0.12 + lightningSeed(fl * 3.1) * 0.32);
+      const intensity = (stage === 'end' ? 1.15 : stage === 'mid' ? 0.82 : 0.62) + pendingZeusLightning.flash * (stage === 'end' ? 1.25 : 0.72);
+      drawLightningBolt(startX, startY, tipX, tipY, intensity, fl * 9.17 + round * 13.7);
+      const ambientFlash = Math.min(stage === 'end' ? 0.05 : 0.025, pendingZeusLightning.flash * (stage === 'end' ? 0.045 : 0.02));
+      ctx.fillStyle = `rgba(255,240,180,${ambientFlash})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    if (isPost()) {
+      // ── Горизонтальная линия entry ──
+      ctx.save();
+      ctx.setLineDash([8,5]);
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+      ctx.shadowColor = 'rgba(255,255,255,0.45)'; ctx.shadowBlur = 4;
+      ctx.beginPath(); ctx.moveTo(0,ey); ctx.lineTo(W,ey); ctx.stroke();
+      ctx.restore();
+
+      // ── Вертикальная entry линия — у левого края ──
+      ctx.save();
+      const evg = ctx.createLinearGradient(0,0,0,H);
+      evg.addColorStop(0,'rgba(255,255,255,0.0)');
+      evg.addColorStop(0.3,'rgba(255,255,255,0.6)');
+      evg.addColorStop(0.7,'rgba(255,255,255,0.6)');
+      evg.addColorStop(1,'rgba(255,255,255,0.0)');
+      ctx.strokeStyle = evg; ctx.lineWidth = 2;
+      ctx.shadowColor = 'rgba(200,220,255,0.5)'; ctx.shadowBlur = 6;
+      ctx.beginPath(); ctx.moveTo(1, 0); ctx.lineTo(1, H); ctx.stroke();
+      ctx.restore();
+
+      // Метка ENTRY
+      ctx.fillStyle = '#ffffff'; ctx.font = '700 10px Cinzel, serif';
+      ctx.textAlign = 'left'; ctx.fillText('ENTRY', 6, ey - 7);
+
+      // ── История (левая половина) — тусклая серая линия ──
+      if (ENTRY_IDX >= 1) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(toX(0,W), toY(pricePath[0],H));
+        for (let i=1; i<=ENTRY_IDX; i++) {
+          const x0=toX(i-1,W), y0=toY(pricePath[i-1],H);
+          const x1=toX(i,W),   y1=toY(pricePath[i],H);
+          ctx.quadraticCurveTo(x0, y0, (x0+x1)/2, (y0+y1)/2);
+        }
+        ctx.strokeStyle = 'rgba(100,130,180,0.22)'; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+        ctx.stroke(); ctx.restore();
+      }
+
+      // ── Новое движение (правая половина) — цветная линия + fill ──
+      const n = tip.idx + 1;
+      if (n - ENTRY_IDX >= 2) {
+        drawPath(ctx, pricePath, ENTRY_IDX, n, tip.x, tip.y);
+        ctx.lineTo(tip.x, H); ctx.lineTo(toX(ENTRY_IDX,W), H); ctx.closePath();
+        const ag = ctx.createLinearGradient(0,0,0,H);
+        if (isWinning) {
+          ag.addColorStop(0, 'rgba(0,220,100,0.28)'); ag.addColorStop(0.6, 'rgba(0,220,100,0.06)');
+        } else {
+          ag.addColorStop(0, 'rgba(255,50,50,0.24)'); ag.addColorStop(0.6, 'rgba(255,50,50,0.05)');
+        }
+        ag.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = ag; ctx.fill();
+
+        drawGlowLine(ctx, pricePath, ENTRY_IDX, n, tip.x, tip.y, lineCol);
+      }
+
+    } else {
+      // ── PRE-ENTRY: розовая линия ──
+      const n = tip.idx + 1;
+      if (n < 2) return;
+
+      drawPath(ctx, pricePath, 0, n, tip.x, tip.y);
+      ctx.lineTo(tip.x, H); ctx.lineTo(toX(0,W), H); ctx.closePath();
+      const ag = ctx.createLinearGradient(0,0,0,H);
+      ag.addColorStop(0, 'rgba(131,110,249,0.28)'); ag.addColorStop(0.6, 'rgba(61,184,255,0.07)');
+      ag.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = ag; ctx.fill();
+
+      drawGlowLine(ctx, pricePath, 0, n, tip.x, tip.y, '#836ef9');
+    }
+
+    // ── Кружок на конце линии ──
+    drawTipDot(ctx, tip.x, tip.y, lineCol);
+
+
+    // Percent badge
+    const badge = document.getElementById('pct-badge');
+    if (phase==='resolving'||phase==='result') {
+      const pctRaw = (curPrice - ep)/ep*100/3;
+      const pct    = Math.round(Math.abs(pctRaw));
+      const up     = curPrice >= ep;
+      badge.style.display    = 'flex';
+      badge.style.color      = up ? '#00e87a' : '#ff3a3a';
+      badge.style.borderColor= up ? '#00e87a' : '#ff3a3a';
+      badge.style.background = up ? 'rgba(0,20,12,0.92)' : 'rgba(20,4,4,0.92)';
+      badge.innerHTML = `${up?'▲':'▼'} ${pct}%`;
+      // Follow chart tip Y (clamp so badge stays inside canvas)
+      const badgeH = badge.offsetHeight || 34;
+      const topPx  = Math.max(4, Math.min(tip.y - badgeH - 8, canvas.height - badgeH - 4));
+      badge.style.top = topPx + 'px';
+    } else badge.style.display = 'none';
+  }
+
+  // ── MINI CHART ──────────────────────────────────────────
+  function drawMini() {
+    const W = miniCanvas.width, H = miniCanvas.height;
+    if (!W||!H||pricePath.length<2) return;
+    mctx.clearRect(0,0,W,H);
+    mctx.fillStyle = '#0c0900'; mctx.fillRect(0,0,W,H);
+
+    const PAD = 4;
+    function mx(i) { return (i/(TOTAL_PTS-1))*W; }
+    function my(v) { return PAD+(1-v)*(H-PAD*2); }
+
+    // Revealed portion only (без будущего)
+    const fl = Math.min(Math.floor(revealProg), TOTAL_PTS-1);
+    const fr = revealProg - fl;
+    const tipMx = fl<TOTAL_PTS-1 ? mx(fl)+fr*(mx(fl+1)-mx(fl)) : mx(fl);
+    const tipMy = fl<TOTAL_PTS-1 ? my(pricePath[fl])+fr*(my(pricePath[fl+1])-my(pricePath[fl])) : my(pricePath[fl]);
+
+    if (fl >= 1) {
+      mctx.beginPath(); mctx.moveTo(mx(0), my(pricePath[0]));
+      for (let i=1;i<=fl;i++) {
+        mctx.quadraticCurveTo(mx(i-1),my(pricePath[i-1]),(mx(i-1)+mx(i))/2,(my(pricePath[i-1])+my(pricePath[i]))/2);
+      }
+      mctx.lineTo(tipMx, tipMy);
+      mctx.lineTo(tipMx, H); mctx.lineTo(mx(0), H); mctx.closePath();
+      const mg = mctx.createLinearGradient(0,0,0,H);
+      mg.addColorStop(0,'rgba(131,110,249,0.42)'); mg.addColorStop(1,'rgba(61,184,255,0.05)');
+      mctx.fillStyle = mg; mctx.fill();
+
+      mctx.beginPath(); mctx.moveTo(mx(0), my(pricePath[0]));
+      for (let i=1;i<=fl;i++) {
+        mctx.quadraticCurveTo(mx(i-1),my(pricePath[i-1]),(mx(i-1)+mx(i))/2,(my(pricePath[i-1])+my(pricePath[i]))/2);
+      }
+      mctx.lineTo(tipMx, tipMy);
+      mctx.strokeStyle = '#836ef9'; mctx.lineWidth = 1.5;
+      mctx.shadowColor = '#836ef9'; mctx.shadowBlur = 6;
+      mctx.stroke(); mctx.shadowBlur = 0;
+    }
+
+    // Entry line on mini
+    mctx.save(); mctx.setLineDash([3,4]);
+    mctx.strokeStyle = 'rgba(255,255,255,0.4)'; mctx.lineWidth = 1;
+    mctx.beginPath(); mctx.moveTo(mx(ENTRY_IDX),0); mctx.lineTo(mx(ENTRY_IDX),H); mctx.stroke();
+    mctx.restore();
+
+    // Tip dot
+    mctx.beginPath(); mctx.arc(tipMx, tipMy, 2.5, 0, Math.PI*2);
+    mctx.fillStyle = '#b7a7ff'; mctx.shadowColor = '#836ef9'; mctx.shadowBlur = 6;
+    mctx.fill(); mctx.shadowBlur = 0;
+  }
+
+  // ── UI HELPERS ───────────────────────────────────────────
+  function updateHUD() {
+    document.getElementById('balance-val').textContent = score;
+    const hEl = document.getElementById('tb-lives');
+    hEl.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const s = document.createElement('span');
+      s.className = 'tb-life-heart' + (i >= lives ? ' lost' : '');
+      s.textContent = '❤';
+      hEl.appendChild(s);
+    }
+    renderDailyCheckIn();
+    renderTradeHistory();
+    renderLeaderboard();
+  }
+
+  function readList(key) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function getPlayerName() {
+    return localStorage.getItem(PLAYER_NAME_KEY) || 'YOU';
+  }
+
+  function saveRunScore() {
+    if (score <= 0) return;
+    const entries = readList(LEADERBOARD_KEY);
+    const runId = currentRunId || ('run-' + Date.now());
+    const existing = entries.find(item => item && item.runId === runId);
+    if (existing) {
+      existing.name = getPlayerName();
+      existing.score = Math.max(Number(existing.score) || 0, score);
+      existing.broker = BROKER_NAMES[selectedBroker] || 'ORACLE';
+      existing.at = new Date().toISOString();
+    } else {
+      entries.push({
+        runId,
+        name: getPlayerName(),
+        score,
+        broker: BROKER_NAMES[selectedBroker] || 'ORACLE',
+        at: new Date().toISOString()
+      });
+    }
+    entries.sort((a, b) => Number(b.score) - Number(a.score));
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries.slice(0, 20)));
+    scoreSavedThisRun = true;
+  }
+
+  function renderLeaderboard() {
+    const list = document.getElementById('leaderboard-list');
+    if (!list) return;
+    const entries = readList(LEADERBOARD_KEY)
+      .filter(item => item && Number.isFinite(Number(item.score)))
+      .sort((a, b) => Number(b.score) - Number(a.score))
+      .slice(0, 5);
+    if (!entries.length) {
+      list.innerHTML = '<div class="panel-empty">NO SCORES YET</div>';
+      return;
+    }
+    list.innerHTML = entries.map((item, index) =>
+      '<div class="leaderboard-row">' +
+        '<span>#' + (index + 1) + '</span>' +
+        '<span>' + String(item.name || 'YOU').slice(0, 9) + '</span>' +
+        '<span class="score">' + (Number(item.score) | 0) + '</span>' +
+      '</div>'
+    ).join('');
+  }
+
+  function renderTradeHistory() {
+    const list = document.getElementById('trade-history-list');
+    if (!list) return;
+    if (!tradeHistory.length) {
+      list.innerHTML = '<div class="panel-empty">NO TRADES YET</div>';
+      return;
+    }
+    list.innerHTML = tradeHistory.slice(0, 5).map(item =>
+      '<div class="trade-item ' + item.kind + '">' +
+        '<span>R' + String(item.round).padStart(2, '0') + '</span>' +
+        '<span class="trade-status">' + item.side + ' ' + item.status + '</span>' +
+        '<span class="trade-score">' + item.value + '</span>' +
+      '</div>'
+    ).join('');
+  }
+
+  function addTradeHistory(won, pts, livesLost) {
+    tradeHistory.unshift({
+      round,
+      side: playerChoice === 'up' ? 'LONG' : 'SHORT',
+      kind: won ? 'win' : 'loss',
+      status: won ? 'WIN' : 'LOSS',
+      value: won ? '+' + pts : '-' + livesLost + 'L'
+    });
+    tradeHistory = tradeHistory.slice(0, 12);
+    renderTradeHistory();
+  }
+
+  function todayKey() {
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  function getDailyCheckIns() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DAILY_CHECKIN_KEY));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function renderDailyCheckIn() {
+    const btn = document.getElementById('daily-checkin-btn');
+    const status = document.getElementById('daily-checkin-status');
+    if (!btn || !status) return;
+    const items = getDailyCheckIns();
+    const today = todayKey();
+    const doneToday = items.some(item => item.date === today);
+    btn.disabled = doneToday;
+    btn.textContent = doneToday ? 'CHECKED' : 'CHECK IN';
+    status.textContent = doneToday
+      ? 'Today checked. Come back tomorrow.'
+      : 'Mark your daily check-in.';
+  }
+
+  function handleDailyCheckIn() {
+    const today = todayKey();
+    const items = getDailyCheckIns();
+    if (!items.some(item => item.date === today)) {
+      items.unshift({ date: today, at: new Date().toISOString() });
+      localStorage.setItem(DAILY_CHECKIN_KEY, JSON.stringify(items.slice(0, 30)));
+    }
+    renderDailyCheckIn();
+  }
+
+  const BROKER_NAMES = {1:'ZEUS', 2:'MEDUSA', 3:'MINOTAUR'};
+  const BROKER_IMGS  = {
+    1: 'https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/zeuspng-TLpujfTaEV-jRuBiYG6l16Z0ODo5tvR2ggDUMNdWe.webp?pXU9',
+    2: 'https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/medusapng-o8cMb2a20X-Ait2HmZpB63kNvtFD7kSVtsHMVTvMs.webp?KRE1',
+    3: 'https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/minotaurpng-BM3sKO9q9d-olXOwlkw5CIbV9Ebz7ER9YbA7oFqAV.webp?SqlZ'
+  };
+  function showSignalPopup() {
+    const brokerName = BROKER_NAMES[selectedBroker] || 'ORACLE';
+    const brokerImg  = BROKER_IMGS[selectedBroker] || '';
+    const popup = document.getElementById('signal-popup');
+    document.querySelector('.sig-header').textContent = brokerName;
+    const av = document.querySelector('.sig-avatar');
+    av.dataset.fallback = brokerName;
+    av.classList.remove('avatar-fallback');
+    av.innerHTML = brokerImg
+      ? `<img src="${brokerImg}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">`
+      : '';
+    wireImageFallbacks(av);
+    document.getElementById('sig-news-text').textContent = currentNews;
+    const sv = document.getElementById('sig-signal-val');
+    sv.textContent = signalDir === 'up' ? '▲ LONG' : '▼ SHORT';
+    sv.className = 'sig-signal-val ' + (signalDir === 'up' ? 'up' : 'dn');
+    const acc = brokerAccuracy(selectedBroker, round);
+    document.getElementById('sig-acc-text').textContent = 'Accuracy: ' + acc + '%';
+    popup.classList.remove('compact-persist');
+    popup.classList.add('show');
+  }
+  function hideSignalPopup(persistAvatarOnly = false) {
+    const popup = document.getElementById('signal-popup');
+    popup.classList.remove('show', 'zeus-active', 'minotaur-up', 'minotaur-down');
+    popup.classList.toggle('compact-persist', !!persistAvatarOnly);
+  }
+
+  // Rules Modal
+  window.showRules = function() {
+    document.getElementById('rules-modal').classList.add('show');
+  };
+
+  window.hideRules = function() {
+    document.getElementById('rules-modal').classList.remove('show');
+  };
+
+  function setDecision() {}
+  function updateRing() {}
+
+  function updatePNL() {
+    const box = document.getElementById('pnl-box');
+    const val = document.getElementById('pnl-val');
+    if (!isPost() || !playerChoice || pricePath.length < 2) {
+      box.className = ''; val.textContent = '—'; return;
+    }
+    const ep  = pricePath[ENTRY_IDX];
+    const cur = pricePath[Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX), TOTAL_PTS - 1)];
+    const rawPct = (cur - ep) / ep * 100 / 3;
+    const pnl   = (playerChoice === 'up' ? 1 : -1) * rawPct;
+    const sign  = pnl >= 0 ? '+' : '';
+    val.textContent = `${sign}${Math.round(pnl)}%`;
+    box.className = pnl >= 0 ? 'profit' : 'loss';
+  }
+
+  function updateGlowState() {
+    const gs = document.getElementById('game-screen');
+    if (!isPost() || !playerChoice || pricePath.length < 2) {
+      gs.classList.remove('glow-green', 'glow-red');
+      return;
+    }
+    const ep  = pricePath[ENTRY_IDX];
+    const cur = pricePath[Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX), TOTAL_PTS - 1)];
+    const priceUp = cur >= ep;
+    const winning = (playerChoice === 'up' && priceUp) || (playerChoice === 'down' && !priceUp);
+    gs.classList.toggle('glow-green', winning);
+    gs.classList.toggle('glow-red',  !winning);
+  }
+
+  function setBtns(enabled, chosen=null) {
+    const bL=document.getElementById('btn-long'), bS=document.getElementById('btn-short');
+    bL.disabled=!enabled; bS.disabled=!enabled;
+    bL.className='game-btn'+(chosen==='up'?' selected':'');
+    bS.className='game-btn'+(chosen==='down'?' selected':'');
+    bL.id='btn-long'; bS.id='btn-short';
+  }
+
+  function showResult(won, pts, livesLeft, livesLost = 1) {
+    const card = document.getElementById('result-card');
+    card.className = 'result-card '+(won?'win':'lose');
+    document.getElementById('res-emoji').textContent = won?'📈':'📉';
+    document.getElementById('res-title').textContent = won?'PROFIT!':'LOSS!';
+    document.getElementById('res-pts').textContent   = won?`+${pts} pts`:`−${livesLost} ${livesLost===1?'life':'lives'}`;
+    document.getElementById('res-sub').textContent   = livesLeft>0
+      ? `❤ ${livesLeft} ${livesLeft===1?'life':'lives'} remaining`
+      : '💀 All lives lost!';
+    document.getElementById('result-overlay').classList.add('show');
+  }
+  function hideResult() { document.getElementById('result-overlay').classList.remove('show'); }
+
+  function shakeChart() {
+    const w = document.getElementById('chart-wrap');
+    w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake');
+  }
+
+  function showGameOver() {
+    document.getElementById('go-overlay').classList.add('show');
+    document.getElementById('go-score').textContent = 'Score: ' + score;
+    saveRunScore();
+    renderLeaderboard();
+  }
+
+  // ── BROKER ACCURACY ──────────────────────────────────────
+  // Each broker has a unique, non-linear accuracy pattern across rounds.
+  // Returns integer 50–95.
+  function brokerAccuracy(broker, r) {
+    const rnd = () => Math.random();
+    if (broker === 1) {
+      // ZEUS: божественный старт 88-94%, после 3 раунда резко падает и хаотит
+      // иногда выдаёт внезапный всплеск даже в поздних раундах (молния богов)
+      let base;
+      if (r === 1) base = 88 + (rnd() * 7 | 0);          // 88–94
+      else if (r === 2) base = 83 + (rnd() * 9 | 0);      // 83–91
+      else if (r === 3) base = 67 + (rnd() * 11 | 0);     // 67–77
+      else base = 50 + (rnd() * 22 | 0);                  // 50–71, хаос
+      // редкий божественный всплеск (15% шанс)
+      const bolt = rnd() < 0.15 ? (13 + (rnd() * 9 | 0)) : 0;
+      // органичный шум ±7
+      const noise = ((rnd() - 0.5) * 14) | 0;
+      return Math.min(95, Math.max(50, base + bolt + noise));
+
+    } else if (broker === 2) {
+      // MEDUSA: стабильно средняя 63-73%, с редкими змеиными бросками вверх
+      // и внезапными провалами — холодная, непредсказуемая
+      const base = 63 + (rnd() * 11 | 0);                 // 63–73 базовая
+      const spike = rnd() < 0.25 ? (17 + (rnd() * 13 | 0)) : 0;  // +17–29 всплеск
+      const drop  = rnd() < 0.2  ? -(11 + (rnd() * 9 | 0))  : 0; // -11–19 провал
+      const noise = ((rnd() - 0.5) * 10) | 0;             // ±5 шум
+      return Math.min(95, Math.max(50, base + spike + drop + noise));
+
+    } else {
+      // MINOTAUR: начинает слабо (51-61%), пик на 4-5 раундах (74-89%),
+      // потом обрушивается — дикий разброс всегда
+      let base;
+      if (r === 1) base = 51 + (rnd() * 11 | 0);          // 51–61
+      else if (r === 2) base = 57 + (rnd() * 13 | 0);     // 57–69
+      else if (r === 3) base = 66 + (rnd() * 14 | 0);     // 66–79
+      else if (r <= 5) base = 74 + (rnd() * 16 | 0);      // 74–89, пик
+      else base = 50 + (rnd() * 19 | 0);                  // 50–68, обрыв
+      // дикий шум — Минотавр непредсказуем
+      const noise = ((rnd() - 0.5) * 22) | 0;             // ±11
+      return Math.min(95, Math.max(50, base + noise));
+    }
+  }
+
+  // ── ROUND ────────────────────────────────────────────────
+  function startRound() {
+    if (phase === 'broker_select') return;
+    playerChoice=null; revealProg=0; phaseTimer=0; countdown=DECIDE_LIMIT;
+    signalDir = Math.random() < 0.5 ? 'up' : 'down';
+    const pool = NEWS_POOLS[selectedBroker] || NEWS_POOLS[1];
+    currentNews = pool[Math.floor(Math.random() * pool.length)];
+    const accPct = brokerAccuracy(selectedBroker, round);
+    const isCorrect = Math.random() * 100 < accPct;
+    lineCol='#836ef9'; pricePath=generatePath(isCorrect ? signalDir : null);
+    _yMin = 0.1; _yMax = 0.9; _yMinT = 0.1; _yMaxT = 0.9;
+    _lastTickFloor = -1;
+    hideSignalPopup();
+    hideResult(); setBtns(false); setPositionBox(null);
+    setDecision('ANALYZING...', 'rgba(255,255,255,0.04)', false);
+    document.getElementById('bets-banner').className = '';
+    document.getElementById('bets-banner').textContent = '';
+    document.getElementById('game-screen').classList.remove('glow-green', 'glow-red');
+    const pb = document.getElementById('pnl-box'); pb.className = '';
+    document.getElementById('pnl-val').textContent = '—';
+    phase='intro'; updateHUD();
+    playChartTick();
+
+    console.log('New round started - phase:', phase);
+
+    if (selectedBroker === 1) {
+      zeusLightningActive = true;
+      zeusPose = null;
+    } else if (selectedBroker === 3) {
+      minotaurPose = null;
+    }
+    if (selectedBroker === 2) {
+      medusaVisible = true;
+      medusaPulseCooldown = 0;
+      const popup = document.getElementById('signal-popup');
+      popup.classList.remove('medusa-hidden', 'medusa-rising');
+    }
+
+  }
+
+  function setPositionBox(choice) {
+    const box = document.getElementById('position-box');
+    const val = document.getElementById('position-val');
+    if (choice === 'up')   { box.className = 'long';  val.textContent = 'LONG';  }
+    else if (choice === 'down') { box.className = 'short'; val.textContent = 'SHORT'; }
+    else                   { box.className = '';       val.textContent = '—';    }
+  }
+
+  window.onDecision = function(choice) {
+    if (phase !== 'deciding') {
+      console.log('onDecision ignored - phase is', phase);
+      return;
+    }
+    
+    console.log('Decision made:', choice);
+    
+    playClick();
+    safeHaptic();
+    hideSignalPopup(true);
+    const popup = document.getElementById('signal-popup');
+    if (selectedBroker === 1) {
+      popup.classList.add('zeus-active');
+      popup.classList.remove('zeus-flash');
+    }
+    if (selectedBroker === 2) {
+      medusaVisible = false;
+      medusaPulseCooldown = 0.7;
+      popup.classList.add('medusa-hidden');
+      popup.classList.remove('medusa-rising');
+    }
+    
+    playerChoice = choice;
+    phase = 'resolving';
+    phaseTimer = 0;
+    revealProg = ENTRY_IDX;
+    
+    playChartTick();
+    setBtns(false, choice);
+    setPositionBox(choice);
+    
+    const banner = document.getElementById('bets-banner');
+    banner.className = '';
+    banner.textContent = '';
+    
+    // Force UI update
+    updatePNL();
+    updateGlowState();
+    
+    console.log('Phase changed to resolving, playerChoice =', playerChoice);
+  };
+
+  function evaluate() {
+    const ep=pricePath[ENTRY_IDX], fp=pricePath[TOTAL_PTS-1];
+    const up=fp>ep;
+    const won=(playerChoice==='up'&&up)||(playerChoice==='down'&&!up);
+    let pts = won ? Math.max(10, Math.round(Math.abs(fp - ep) * 600)) : 0;
+    let livesLost = 1;
+
+    if (selectedBroker === 3) {
+      if (won) pts *= 2;
+      else livesLost = 2;
+    }
+
+    if (won) {
+      score += pts;
+      playWin();
+      playWinMusic();
+      safeHaptic();
+    } else {
+      lives = Math.max(0, lives - livesLost);
+      playLose();
+      playLoseMusic();
+      shakeChart();
+      safeHaptic();
+    }
+    addTradeHistory(won, pts, livesLost);
+    updateHUD(); showResult(won,pts,lives,livesLost);
+  }
+
+  // ── GAME ─────────────────────────────────────────────────
+  function startGame() {
+    lives=3; score=0; round=1; playerChoice=null;
+    tradeHistory=[];
+    scoreSavedThisRun=false;
+    currentRunId='run-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    phase = 'idle';
+    phaseTimer = 0;
+    countdown = DECIDE_LIMIT;
+    revealProg = 0;
+    _lastTickFloor = -1;
+    showZeusOverlay = false;
+    try { _tickA.pause(); _tickA.currentTime = 0; } catch(e) {}
+    try { _tickB.pause(); _tickB.currentTime = 0; } catch(e) {}
+    try { ac(); } catch(e) {} // инициализируем AudioContext заранее
+    document.getElementById('go-overlay').classList.remove('show');
+    hideResult(); updateHUD();
+    startRound();
+    if (!rafId) { lastTs=performance.now(); rafId=requestAnimationFrame(loop); }
+  }
+
+  function loop(ts) {
+    const dt = Math.min((ts-lastTs)/1000, 0.05);
+    lastTs = ts;
+
+
+    if (phase==='intro') {
+      phaseTimer += dt;
+      revealProg = Math.min(ENTRY_IDX, (phaseTimer/INTRO_DUR)*ENTRY_IDX);
+      if (revealProg >= ENTRY_IDX) {
+        revealProg=ENTRY_IDX; phaseTimer=0; countdown=DECIDE_LIMIT;
+        phase='deciding'; 
+        setBtns(true);
+        setDecision('MAKE YOUR DECISION', 'rgba(140,100,15,0.6)', true);
+        
+        const el = document.getElementById('bets-banner');
+        el.textContent = `PLACE YOUR BETS  ${DECIDE_LIMIT}`;
+        el.className = 'show';
+        
+        playBannerMusic();
+        showSignalPopup();
+      }
+
+    } else if (phase==='deciding') {
+      phaseTimer += dt;
+      countdown = DECIDE_LIMIT - phaseTimer;
+      updateRing(Math.max(0, countdown));
+      // Update banner countdown
+      const el = document.getElementById('bets-banner');
+      if (el.classList.contains('show')) el.textContent = `PLACE YOUR BETS  ${Math.ceil(Math.max(0,countdown))}`;
+      if (countdown <= 0) window.onDecision(Math.random()<0.5?'up':'down');
+
+    } else if (phase==='resolving') {
+      phaseTimer += dt;
+      revealProg = Math.min(TOTAL_PTS-1,
+        ENTRY_IDX + (phaseTimer/RESOLVE_DUR)*(TOTAL_PTS-ENTRY_IDX));
+      if (revealProg >= TOTAL_PTS-1) {
+        revealProg=TOTAL_PTS-1; phaseTimer=0;
+        phase='result'; evaluate();
+      }
+
+    } else if (phase==='result') {
+      phaseTimer += dt;
+      if (phaseTimer >= RESULT_DUR) {
+        hideResult();
+        if (lives<=0) { phase='gameover'; showGameOver(); }
+        else          { round++; startRound(); }
+      }
+    }
+
+
+    // ── Chart tick sound ────────────────────────────────
+    if (phase === 'intro' || phase === 'resolving') {
+      const fl = Math.floor(revealProg);
+      if (fl !== _lastTickFloor && fl > 0 && fl % 65 === 0) {
+        _lastTickFloor = fl;
+        playChartTick();
+      }
+    }
+    // Останавливаем звук когда график доходит до правого края
+    if ((phase === 'deciding' || phase === 'result') && _lastTickFloor !== -99) {
+      _lastTickFloor = -99;
+      try { _tickA.pause(); _tickA.currentTime = 0; } catch(e) {}
+      try { _tickB.pause(); _tickB.currentTime = 0; } catch(e) {}
+    }
+
+    updatePNL();
+    updateGlowState();
+    const compactPopup = document.getElementById('signal-popup');
+    if (compactPopup.classList.contains('compact-persist') && selectedBroker === 1) {
+      if (performance.now() < zeusAvatarPulseUntil) compactPopup.classList.add('zeus-flash');
+      else compactPopup.classList.remove('zeus-flash');
+    } else {
+      compactPopup.classList.remove('zeus-flash');
+    }
+
+    // Medusa frame pulses in and out during sharp rising market moments
+    if (compactPopup.classList.contains('compact-persist') && selectedBroker === 2 && phase === 'resolving' && pricePath.length >= 2) {
+      medusaPulseCooldown = Math.max(0, medusaPulseCooldown - dt);
+      const fl = Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX + 3), TOTAL_PTS - 1);
+      const prev = pricePath[Math.max(ENTRY_IDX, fl - 2)] || pricePath[ENTRY_IDX];
+      const cur = pricePath[fl] || prev;
+      const delta = cur - prev;
+      const sharpRise = delta > 0.024;
+
+      if (sharpRise && !medusaVisible && medusaPulseCooldown <= 0) {
+        medusaVisible = true;
+        medusaPulseCooldown = 0.7;
+        compactPopup.classList.remove('medusa-hidden');
+        compactPopup.classList.remove('medusa-rising');
+        void compactPopup.offsetWidth;
+        compactPopup.classList.add('medusa-rising');
+      } else if (!sharpRise && medusaVisible && medusaPulseCooldown <= 0) {
+        medusaVisible = false;
+        medusaPulseCooldown = 0.45;
+        compactPopup.classList.add('medusa-hidden');
+        compactPopup.classList.remove('medusa-rising');
+      }
+    } else if (selectedBroker === 2) {
+      compactPopup.classList.remove('medusa-hidden', 'medusa-rising');
+      medusaVisible = true;
+    }
+    if (compactPopup.classList.contains('compact-persist') && selectedBroker === 3 && playerChoice && pricePath.length >= 2) {
+      const ep  = pricePath[ENTRY_IDX];
+      const cur = pricePath[Math.min(Math.max(Math.floor(revealProg), ENTRY_IDX), TOTAL_PTS - 1)];
+      const winning = (playerChoice === 'up' && cur >= ep) || (playerChoice === 'down' && cur < ep);
+      compactPopup.classList.toggle('minotaur-up', winning);
+      compactPopup.classList.toggle('minotaur-down', !winning);
+    } else if (compactPopup.classList.contains('compact-persist')) {
+      compactPopup.classList.remove('minotaur-up', 'minotaur-down');
+    }
+    drawChart();
+    drawMini();
+    rafId = requestAnimationFrame(loop);
+  }
+
+})();
+</script>
+</body>
+</html>

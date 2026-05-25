@@ -2438,6 +2438,7 @@
   const PLAYER_NAME_KEY = 'olympus-player-name';
   const LEADERBOARD_KEY = 'olympus-real-leaderboard';
   const DAILY_CHECKIN_KEY = 'olympus-daily-checkins';
+  const OLYMPUS_CONTRACT_ADDRESS = '';
   const PAYMENT_WALLET = '0x19a863aeC37C83C7Cb34548c29f1F7e41BCB51Ca';
   const PAYMENT_AMOUNT_MON = '50';
   const PAYMENT_AMOUNT_WEI = monToWei(PAYMENT_AMOUNT_MON);
@@ -2536,6 +2537,14 @@
 
   function getAppKitModal() {
     return appKitModal || window.olympusAppKit || null;
+  }
+
+  function getPaymentRecipient() {
+    return OLYMPUS_CONTRACT_ADDRESS || PAYMENT_WALLET;
+  }
+
+  function isContractPaymentEnabled() {
+    return /^0x[a-fA-F0-9]{40}$/.test(OLYMPUS_CONTRACT_ADDRESS);
   }
 
   function readAppKitState() {
@@ -2785,7 +2794,7 @@
     if (String(tx.from).toLowerCase() !== String(account).toLowerCase()) {
       throw new Error('Payment sender mismatch.');
     }
-    if (String(tx.to).toLowerCase() !== PAYMENT_WALLET.toLowerCase()) {
+    if (String(tx.to).toLowerCase() !== getPaymentRecipient().toLowerCase()) {
       throw new Error('Payment recipient mismatch.');
     }
     if (BigInt(tx.value || '0x0') < PAYMENT_AMOUNT_WEI) {
@@ -2804,12 +2813,12 @@
       provider = getEthereumProvider();
       if (!provider) throw new Error('Wallet provider is not ready.');
       await ensureMonadNetwork(provider);
-      setWalletStatus('Confirm payment in wallet...');
+      setWalletStatus(isContractPaymentEnabled() ? 'Confirm contract payment...' : 'Confirm payment in wallet...');
       const txHash = await provider.request({
         method: 'eth_sendTransaction',
         params: [{
           from: account,
-          to: PAYMENT_WALLET,
+          to: getPaymentRecipient(),
           value: hexWei(PAYMENT_AMOUNT_WEI)
         }]
       });

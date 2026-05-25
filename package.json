@@ -5,6 +5,14 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "check": "node --check server.js && node -e \"const fs=require('fs');const html=fs.readFileSync('index.html','utf8');const scripts=[...html.matchAll(/<script(?:[^>]*)>([\\s\\S]*?)<\\/script>/g)].map(m=>m[1]);scripts.forEach(s=>new Function(s));console.log('ok')\""
+    "check": "node --check server.js && node --check scripts/compile-contract.js && node --check scripts/deploy-contract.js && node --check scripts/set-contract-address.js && node -e \"const fs=require('fs');const html=fs.readFileSync('index.html','utf8');const scripts=[...html.matchAll(/<script(?:[^>]*)>([\\s\\S]*?)<\\/script>/g)].map(m=>m[1]);scripts.forEach(s=>new Function(s));console.log('ok')\"",
+    "contract:compile": "node scripts/compile-contract.js",
+    "contract:deploy": "node scripts/deploy-contract.js",
+    "contract:set-address": "node scripts/set-contract-address.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "solc": "^0.8.30"
   }
 }

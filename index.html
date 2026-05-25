@@ -1389,6 +1389,18 @@
       background: radial-gradient(ellipse at 50% 0%, rgba(220,180,50,0.15) 0%, transparent 70%);
       pointer-events: none;
     }
+    .broker-avatar-frame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    #bavatar-2 img {
+      object-position: center 14%;
+    }
     .broker-avatar-frame.avatar-fallback::after,
     .sig-avatar.avatar-fallback::after {
       content: attr(data-fallback);
@@ -1947,7 +1959,7 @@
       <!-- Broker 1 -->
       <div class="broker-card" id="bcard-1">
         <div class="broker-card-inner">
-          <div class="broker-avatar-frame" id="bavatar-1"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/zeuspng-TLpujfTaEV-jRuBiYG6l16Z0ODo5tvR2ggDUMNdWe.webp?pXU9" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;"></div>
+          <div class="broker-avatar-frame" id="bavatar-1"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/zeuspng-TLpujfTaEV-jRuBiYG6l16Z0ODo5tvR2ggDUMNdWe.webp?pXU9"></div>
           <div class="broker-info-panel">
             <div class="broker-name">ZEUS</div>
             <div class="broker-title-role">Manages schedules using a storm</div>
@@ -1960,7 +1972,7 @@
       <!-- Broker 2 -->
       <div class="broker-card" id="bcard-2">
         <div class="broker-card-inner">
-          <div class="broker-avatar-frame" id="bavatar-2"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/medusapng-o8cMb2a20X-Ait2HmZpB63kNvtFD7kSVtsHMVTvMs.webp?KRE1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;"></div>
+          <div class="broker-avatar-frame" id="bavatar-2"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/medusapng-o8cMb2a20X-Ait2HmZpB63kNvtFD7kSVtsHMVTvMs.webp?KRE1"></div>
           <div class="broker-info-panel">
             <div class="broker-name">MEDUSA</div>
             <div class="broker-title-role">Just one glance at the graph changes its direction</div>
@@ -1973,7 +1985,7 @@
       <!-- Broker 3 -->
       <div class="broker-card" id="bcard-3">
         <div class="broker-card-inner">
-          <div class="broker-avatar-frame" id="bavatar-3"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/minotaurpng-BM3sKO9q9d-olXOwlkw5CIbV9Ebz7ER9YbA7oFqAV.webp?SqlZ" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;"></div>
+          <div class="broker-avatar-frame" id="bavatar-3"><img src="https://remix.gg/blob/465c40a1-d6a6-49b9-8db9-f03455ade04f/minotaurpng-BM3sKO9q9d-olXOwlkw5CIbV9Ebz7ER9YbA7oFqAV.webp?SqlZ"></div>
           <div class="broker-info-panel">
             <div class="broker-name">MINOTAUR</div>
             <div class="broker-title-role">Punishes for making the wrong choice</div>

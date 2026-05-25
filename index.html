@@ -206,6 +206,44 @@
       border-radius: 50%;
       pointer-events: none;
     }
+    #home-btn {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 11px;
+      border: 1px solid rgba(183,167,255,0.48);
+      background: rgba(8,6,20,0.72);
+      color: #d8ceff;
+      cursor: pointer;
+      z-index: 121;
+      box-shadow:
+        0 0 16px rgba(131,110,249,0.36),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+    #home-btn:hover {
+      border-color: rgba(255,122,182,0.7);
+      box-shadow:
+        0 0 20px rgba(131,110,249,0.52),
+        0 0 34px rgba(255,122,182,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.16);
+    }
+    #home-btn:active {
+      transform: translateY(-50%) scale(0.96);
+    }
+    #home-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      filter: drop-shadow(0 0 8px rgba(131,110,249,0.78));
+    }
     .tb-title {
       font-family: 'Cinzel', serif; font-size: 11px;
       font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
@@ -1637,6 +1675,16 @@
         font-size: 9px;
         letter-spacing: 5px;
       }
+      #home-btn {
+        left: 16px;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+      }
+      #home-btn svg {
+        width: 21px;
+        height: 21px;
+      }
       #ticker-wrap {
         height: 36px;
         margin: 10px 28px 0;
@@ -1843,6 +1891,16 @@
         font-size: 8px;
         letter-spacing: 0.7px;
       }
+      #home-btn {
+        left: 8px;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+      }
+      #home-btn svg {
+        width: 17px;
+        height: 17px;
+      }
       .tb-title {
         max-width: 210px;
         text-align: center;
@@ -1975,6 +2033,13 @@
     <!-- TOP BAR -->
     <div id="top-panel">
     <div id="top-bar">
+      <button id="home-btn" type="button" aria-label="Home" title="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m3 11 9-8 9 8"></path>
+          <path d="M5 10v10h14V10"></path>
+          <path d="M9 20v-6h6v6"></path>
+        </svg>
+      </button>
       <span class="tb-title">OLYMPUS EXCHANGE</span>
       <span class="tb-chain">in Monad</span>
       <div id="wallet-panel">
@@ -2480,7 +2545,33 @@
     startGame();
   }
 
+  function goHome() {
+    playClick();
+    safeHaptic();
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    phase = 'idle';
+    phaseTimer = 0;
+    playerChoice = null;
+    try { _tickA.pause(); _tickA.currentTime = 0; } catch(e) {}
+    try { _tickB.pause(); _tickB.currentTime = 0; } catch(e) {}
+    document.getElementById('go-overlay').classList.remove('show');
+    document.getElementById('game-screen').classList.remove('glow-green', 'glow-red');
+    hideResult();
+    hideSignalPopup(false);
+    setBtns(false);
+    setPositionBox(null);
+    gameScr.style.display = 'none';
+    brokerScr.style.display = 'flex';
+    brokerScr.style.opacity = '';
+    void brokerScr.offsetWidth;
+    brokerScr.classList.add('show');
+  }
+
   document.getElementById('btn-play-again').addEventListener('click', playAgain);
+  document.getElementById('home-btn').addEventListener('click', goHome);
   document.getElementById('btn-continue').addEventListener('click', handleContinueGame);
   document.getElementById('wallet-connect-btn').addEventListener('click', handleWalletConnect);
   document.getElementById('daily-checkin-btn').addEventListener('click', handleDailyCheckIn);

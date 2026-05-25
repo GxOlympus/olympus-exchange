@@ -26,7 +26,7 @@ The Solidity contract is in `contracts/OlympusExchange.sol`.
 
 It records:
 
-- paid continues through `payToContinue()` or a plain MON transfer to the contract;
+- paid continues through `payToContinue()` with a 10 MON fee;
 - daily check-ins through `checkIn()`;
 - score submissions through `submitScore()`;
 - owner withdrawals to the treasury wallet.

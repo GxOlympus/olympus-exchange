@@ -2036,7 +2036,7 @@
               <div class="go-score" id="go-score">Score: 0</div>
               <div class="go-actions">
                 <button class="go-btn primary" id="btn-play-again" type="button">PLAY AGAIN</button>
-                <button class="go-btn" id="btn-continue" type="button">CONTINUE 50 MON</button>
+                <button class="go-btn" id="btn-continue" type="button">CONTINUE 10 MON</button>
               </div>
             </div>
           </div>
@@ -2440,8 +2440,9 @@
   const DAILY_CHECKIN_KEY = 'olympus-daily-checkins';
   const OLYMPUS_CONTRACT_ADDRESS = '';
   const PAYMENT_WALLET = '0x19a863aeC37C83C7Cb34548c29f1F7e41BCB51Ca';
-  const PAYMENT_AMOUNT_MON = '50';
+  const PAYMENT_AMOUNT_MON = '10';
   const PAYMENT_AMOUNT_WEI = monToWei(PAYMENT_AMOUNT_MON);
+  const PAY_TO_CONTINUE_SELECTOR = '0xc2f47f91';
   const MONAD_CHAIN = {
     chainId: '0x8f',
     chainName: 'Monad Mainnet',
@@ -2452,6 +2453,7 @@
   let tradeHistory = [];
   let scoreSavedThisRun = false;
   let currentRunId = '';
+  let currentGameId = 0n;
   let walletAccount = '';
   let walletChainId = '';
   let appKitModal = null;
@@ -2516,6 +2518,22 @@
 
   function hexWei(value) {
     return '0x' + BigInt(value).toString(16);
+  }
+
+  function uint256Hex(value) {
+    return BigInt(value).toString(16).padStart(64, '0');
+  }
+
+  function getCurrentGameId() {
+    if (!currentGameId) {
+      currentGameId = BigInt(Date.now()) * 1000000n + BigInt(Math.floor(Math.random() * 1000000));
+    }
+    return currentGameId;
+  }
+
+  function getContinueTxData() {
+    if (!isContractPaymentEnabled()) return undefined;
+    return PAY_TO_CONTINUE_SELECTOR + uint256Hex(getCurrentGameId()) + uint256Hex(round);
   }
 
   function shortAddress(address) {
@@ -2765,7 +2783,7 @@
     const playBtn = document.getElementById('btn-play-again');
     if (continueBtn) {
       continueBtn.disabled = busy;
-      continueBtn.textContent = busy ? 'PAYING...' : 'CONTINUE 50 MON';
+      continueBtn.textContent = busy ? 'PAYING...' : 'CONTINUE 10 MON';
     }
     if (playBtn) playBtn.disabled = busy;
   }
@@ -2798,7 +2816,7 @@
       throw new Error('Payment recipient mismatch.');
     }
     if (BigInt(tx.value || '0x0') < PAYMENT_AMOUNT_WEI) {
-      throw new Error('Payment amount is lower than 50 MON.');
+      throw new Error('Payment amount is lower than 10 MON.');
     }
     return receipt;
   }
@@ -2808,19 +2826,23 @@
     let provider = getEthereumProvider();
     try {
       setContinueBusy(true);
-      setWalletStatus('Preparing 50 MON payment...');
+      setWalletStatus('Preparing 10 MON payment...');
       const account = walletAccount || await connectWallet();
       provider = getEthereumProvider();
       if (!provider) throw new Error('Wallet provider is not ready.');
       await ensureMonadNetwork(provider);
       setWalletStatus(isContractPaymentEnabled() ? 'Confirm contract payment...' : 'Confirm payment in wallet...');
+      const txParams = {
+        from: account,
+        to: getPaymentRecipient(),
+        value: hexWei(PAYMENT_AMOUNT_WEI)
+      };
+      const callData = getContinueTxData();
+      if (callData) txParams.data = callData;
+
       const txHash = await provider.request({
         method: 'eth_sendTransaction',
-        params: [{
-          from: account,
-          to: getPaymentRecipient(),
-          value: hexWei(PAYMENT_AMOUNT_WEI)
-        }]
+        params: [txParams]
       });
       setWalletStatus('Confirming ' + shortAddress(txHash) + '...');
       await verifyPayment(provider, txHash, account);
@@ -3916,6 +3938,7 @@
     tradeHistory=[];
     scoreSavedThisRun=false;
     currentRunId='run-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    currentGameId=BigInt(Date.now()) * 1000000n + BigInt(Math.floor(Math.random() * 1000000));
     phase = 'idle';
     phaseTimer = 0;
     countdown = DECIDE_LIMIT;

@@ -15,7 +15,7 @@ const {
   MONAD_PRIVATE_KEY,
   MONAD_RPC_URL = 'https://rpc.monad.xyz',
   TREASURY_ADDRESS = '0x19a863aeC37C83C7Cb34548c29f1F7e41BCB51Ca',
-  CONTINUE_FEE_MON = '50',
+  CONTINUE_FEE_MON = '10',
   DEPLOYMENT_NETWORK = 'monad-mainnet'
 } = process.env;
 

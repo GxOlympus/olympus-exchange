@@ -35,6 +35,31 @@ async function main() {
   console.log(`Continue fee: ${CONTINUE_FEE_MON} MON`);
 
   const factory = new ethers.ContractFactory(artifact.abi, artifact.bytecode, wallet);
+  const network = await provider.getNetwork();
+  const balance = await provider.getBalance(wallet.address);
+  console.log(`Network chainId: ${network.chainId.toString()}`);
+  console.log(`Deployer balance: ${ethers.formatEther(balance)} MON`);
+
+  const deployTx = await factory.getDeployTransaction(TREASURY_ADDRESS, fee);
+  const estimatedGas = await provider.estimateGas({ ...deployTx, from: wallet.address });
+  const feeData = await provider.getFeeData();
+  const gasPrice = feeData.maxFeePerGas || feeData.gasPrice;
+
+  if (gasPrice) {
+    const estimatedCost = estimatedGas * gasPrice;
+    console.log(`Estimated deploy gas: ${estimatedGas.toString()}`);
+    console.log(`Estimated deploy cost: ${ethers.formatEther(estimatedCost)} MON`);
+
+    if (balance < estimatedCost) {
+      console.error('');
+      console.error('Deploy wallet has insufficient MON for gas.');
+      console.error(`Send MON to: ${wallet.address}`);
+      console.error(`Balance: ${ethers.formatEther(balance)} MON`);
+      console.error(`Estimated needed: ${ethers.formatEther(estimatedCost)} MON`);
+      process.exit(1);
+    }
+  }
+
   const contract = await factory.deploy(TREASURY_ADDRESS, fee);
   await contract.waitForDeployment();
 
@@ -61,6 +86,18 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error(error);
+  const message =
+    error && error.error && error.error.message
+      ? error.error.message
+      : error && error.shortMessage
+        ? error.shortMessage
+        : error && error.message
+          ? error.message
+          : String(error);
+
+  console.error(`Deploy failed: ${message}`);
+  if (/insufficient balance/i.test(message)) {
+    console.error('Send MON to the deployer wallet and run npm.cmd run contract:deploy again.');
+  }
   process.exit(1);
 });
